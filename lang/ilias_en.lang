@@ -1,0 +1,72 @@
+// 
+// English Language File for MindmapObject Plugin
+//
+
+<!-- language file start -->
+obj_xmmp#:#Mindmap
+objs_xmmp#:#Mindmap
+obj_xmmp_duplicate#:#Copy
+objs_xmmp_duplicate#:#Copy Mindmap
+obj_xmmp_select#:#Select Mindmap
+xmmp_add#:#Add Mindmap
+xmmp_new#:#Add New Mindmap
+xmmp_read#:#Read access to Mindmap
+xmmp_write#:#Edit Mindmap
+xmmp_delete#:#Delete Mindmap
+xmmp_visible#:#Mindmap is visible
+xmmp_edit_permission#:#Change permission settings
+crs_create_xmmp#:#Create Mindmap
+grp_create_xmmp#:#Create Mindmap
+fold_create_xmmp#:#Create Mindmap
+root_create_xmmp#:#Create Mindmap
+cat_create_xmmp#:#Create Mindmap
+content#:#Content
+editmap#:#Edit
+mindmap#:#Mindmap
+properties#:#Properties
+edit_properties#:#Edit Properties
+title#:#Title
+description#:#Description
+save#:#Save
+cancel#:#Cancel
+edit#:#Edit
+status#:#Status
+offline#:#Offline
+plugininfo#:#Plugin-Information
+rep_robj_xmmp_obj_xmmp#:#Mindmap
+rep_robj_xmmp_mindmap_plugin_configuration#:#Konfiguration
+mindmap_plugin_configuration#:#Configuration
+saving_invoked#:#saved
+mindmap_speichern#:#save mindmap
+Kein_Objekt_aktiv#:#no active object
+neuer_Knotenpunkt#:#new node
+Knotenpunkt_bearbeiten#:#edit node
+Titel#:#Title
+um_mehrere_Knoten_nebeneinander_zu_erstellen#:#to create multiple nodes adjacent
+um_mehrere_Knoten_hintereinander_zu_erstellen#:#to create multiple nodes in a row
+Beschreibung#:#Description
+Schriftfarbe#:#Fontcolor
+Schriftgroesse#:#Fontsize
+Hintergrundfarbe#:#Backgroundcolor
+Rahmenfarbe#:#Bordercolor
+Dicke#:#Thickness
+Art#:#Type
+abgerundet#:#rounded
+rund#:#round
+eckig#:#angular
+unterstrichen#:#underlined
+Verlinkung#:#Linking
+kein_Link#:#no link
+externer_Link#:#external link
+interner_Link#:#internal link
+oder#:#or
+hinzufuegen#:#add node
+bearbeiten#:#edit
+loeschen#:#delete
+umhaengen#:#relocate node
+hieranhaengen#:#attach node to this one
+amEnde#:#at the end
+amAnfang#:#at the beginning
+amAnfangundamEnde#:#at both sides
+ohnePfeilspitzen#:#without
+Diesen_Knoten_inkl_Unterknoten_loeschen#:#delete this node with its subnodes

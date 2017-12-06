@@ -1,0 +1,72 @@
+// 
+// German Language File for MindmapObject Plugin
+//
+
+<!-- language file start -->
+obj_xmmp#:#Mindmap
+objs_xmmp#:#Mindmap
+obj_xmmp_duplicate#:#Kopieren
+objs_xmmp_duplicate#:#Mindmap kopieren
+obj_xmmp_select#:#Mindmap auswählen
+xmmp_add#:#Mindmap hinzufügen
+xmmp_new#:#Mindmap neu anlegen
+xmmp_read#:#Lesenzugriff Mindmap
+xmmp_write#:#Mindmap bearbeiten
+xmmp_delete#:#Mindmap löschen
+xmmp_visible#:#Mindmap ist sichtbar
+xmmp_edit_permission#:#Rechte ändern
+crs_create_xmmp#:#Erstelle Mindmap
+grp_create_xmmp#:#Erstelle Mindmap
+fold_create_xmmp#:#Erstelle Mindmap
+root_create_xmmp#:#Erstelle Mindmap
+cat_create_xmmp#:#Erstelle Mindmap
+content#:#Inhalt
+editmap#:#Bearbeiten
+mindmap#:#Mindmap
+properties#:#Einstellungen
+edit_properties#:#Einstellungen bearbeiten
+title#:#Titel
+description#:#Beschreibung
+save#:#Speichern
+cancel#:#Abbruch
+edit#:#Bearbeiten
+status#:#Status
+offline#:#Offline
+plugininfo#:#Plugin-Information
+rep_robj_xmmp_obj_xmmp#:#Mindmap
+rep_robj_xmmp_mindmap_plugin_configuration#:#Konfiguration
+mindmap_plugin_configuration#:#Konfiguration
+saving_invoked#:#gespeichert
+mindmap_speichern#:#Mindmap speichern
+Kein_Objekt_aktiv#:#Kein Objekt aktiv
+neuer_Knotenpunkt#:#neuer Knotenpunkt
+Knotenpunkt_bearbeiten#:#Knotenpunkt bearbeiten
+Titel#:#Titel
+um_mehrere_Knoten_nebeneinander_zu_erstellen#:#um mehrere Knoten nebeneinander zu erstellen
+um_mehrere_Knoten_hintereinander_zu_erstellen#:#um mehrere Knoten hintereinander zu erstellen
+Beschreibung#:#Beschreibung
+Schriftfarbe#:#Schriftfarbe
+Schriftgroesse#:#Schriftgr&ouml;&szlig;e
+Hintergrundfarbe#:#Hintergrundfarbe
+Rahmenfarbe#:#Rahmenfarbe
+Dicke#:#Dicke
+Art#:#Art
+abgerundet#:#abgerundet
+rund#:#rund
+eckig#:#eckig
+unterstrichen#:#unterstrichen
+Verlinkung#:#Verlinkung
+kein_Link#:#kein Link
+externer_Link#:#externer Link
+interner_Link#:#interner Link
+oder#:#oder
+hinzufuegen#:#Knoten anf&uuml;gen
+bearbeiten#:#bearbeiten
+loeschen#:#loeschen
+umhaengen#:#Knoten umhängen
+hieranhaengen#:#an markierten Knoten anhängen
+amEnde#:#am Ende
+amAnfang#:#am Anfang
+amAnfangundamEnde#:#am Anfang und am Ende
+ohnePfeilspitzen#:#ohne Pfeilspitze
+Diesen_Knoten_inkl_Unterknoten_loeschen#:#Diesen Knoten inkl. Unterknoten l&ouml;schen

@@ -1,0 +1,32 @@
+
+
+<link type="text/css" href="Customizing/global/plugins/Services/Repository/RepositoryObject/Mindmap/mindmap/mindmap.css" rel="stylesheet" media="screen" />
+<script type="text/javascript" src="Customizing/global/plugins/Services/Repository/RepositoryObject/Mindmap/mindmap/mindmap.js"></script>
+<script type="text/javascript" src="Customizing/global/plugins/Services/Repository/RepositoryObject/Mindmap/mindmap/json2.js"></script>
+
+<input type="button" value="#!mindmap_speichern!#" onclick="$('#mindmapdata').val($('#map').data('mindmap').mindmap.json);$('#mindmapform').submit();" class="submit"/>
+<div id='map' style="width:500;height:400px;border: solid 1px #800000;position:relative;"></div>
+
+<script type="text/javascript">
+
+$(function() {
+		var tree = #MINDMAPDATA#;
+
+		var pos = $('#map').position();
+		var h = $(window).height()  - pos.top-10;
+		var w = $('#map').width();
+		if(h<500) h = 500;
+		$('#map').css("height", h).css("width", w-20);
+                
+		$('#map').mindmap({"tree": tree, "edit": true, "path": "Customizing/global/plugins/Services/Repository/RepositoryObject/Mindmap/mindmap"});
+		
+		
+});
+</script>
+
+
+<form id="mindmapform" method="post">
+    <input type="hidden" name="sendmindmap" value="1" />
+    <input type="hidden" name="mindmapdata" id="mindmapdata" />
+    <input type="button" value="#!mindmap_speichern!#" onclick="$('#mindmapdata').val($('#map').data('mindmap').mindmap.json);$('#mindmapform').submit();" class="submit"/>
+</form>
