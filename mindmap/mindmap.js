@@ -363,8 +363,10 @@
 
 	    if(!mindmap.editable) {
 
-			var lernstand = mindmap.nodes[mindmap.edges[i].to].lernstand+"";
-			v += addLernstand(lernstand);
+			if(mindmap.nodes[mindmap.edges[i].to].linktype) {
+				var lernstand = mindmap.nodes[mindmap.edges[i].to].lernstand + "";
+				v += addLernstand(lernstand);
+			}
 
 			if(mindmap.nodes[mindmap.edges[i].to].linktype=="extern") {
 			    v = "<a href='"+mindmap.nodes[mindmap.edges[i].to].linktarget+"' target='_blank' style='text-decoration: none; border-bottom:1px solid;'>"+v+"</a>";
@@ -375,8 +377,10 @@
 		    }
 	    } else {
 
-			var lernstand = mindmap.nodes[mindmap.edges[i].to].lernstand+"";
-			v += addLernstand("not_attempted");
+			if(mindmap.nodes[mindmap.edges[i].to].linktype) {
+				var lernstand = mindmap.nodes[mindmap.edges[i].to].lernstand + "";
+				v += addLernstand("not_attempted");
+			}
 
 		    if(mindmap.nodes[mindmap.edges[i].to].linktype=="extern") {
 			    v = "<span style='text-decoration: none; border-bottom:1px solid;'>"+v+"</span>";
