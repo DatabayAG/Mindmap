@@ -358,7 +358,7 @@
 	    if(!mindmap.editable) {
 		    if(mindmap.nodes[mindmap.edges[i].to].linktype=="extern") {
 			    v = "<a href='"+mindmap.nodes[mindmap.edges[i].to].linktarget+"' target='_blank' style='text-decoration: none; border-bottom:1px solid;'>"+v+"</a>";
-		    } else if(mindmap.nodes[mindmap.edges[i].to].linktype=="intern") {
+		    } else if(mindmap.nodes[mindmap.edges[i].to].linktype=="intern" || mindmap.nodes[mindmap.edges[i].to].linktype=="lernpfad") {
 			    if(typeof(internlinks[mindmap.nodes[mindmap.edges[i].to].linktarget])!="undefined") {
 				    v = "<a href='"+internlinks[mindmap.nodes[mindmap.edges[i].to].linktarget]+"' style='text-decoration: none; border-bottom:1px dashed;'>"+v+"</a>";
 			    }
@@ -366,7 +366,7 @@
 	    } else {
 		    if(mindmap.nodes[mindmap.edges[i].to].linktype=="extern") {
 			    v = "<span style='text-decoration: none; border-bottom:1px solid;'>"+v+"</span>";
-		    } else if(mindmap.nodes[mindmap.edges[i].to].linktype=="intern") {
+		    } else if(mindmap.nodes[mindmap.edges[i].to].linktype=="intern" || mindmap.nodes[mindmap.edges[i].to].linktype=="lernpfad") {
 			    v = "<span style='text-decoration: none; border-bottom:1px dashed;'>"+v+"</span>";
 		    }
 	    }
