@@ -374,7 +374,7 @@
 	    } else {
 		    if(mindmap.nodes[mindmap.edges[i].to].linktype=="extern") {
 			    v = "<span style='text-decoration: none; border-bottom:1px solid;'>"+v+"</span>";
-		    } else if(mindmap.nodes[mindmap.edges[i].to].linktype=="intern" || mindmap.nodes[mindmap.edges[i].to].linktype=="lernpfad") {
+		    } else if(mindmap.nodes[mindmap.edges[i].to].linktype=="intern" || mindmap.nodes[mindmap.edges[i].to].linktype=="lernstand") {
 			    v = "<span style='text-decoration: none; border-bottom:1px dashed;'>"+v+"</span>";
 		    }
 	    }
