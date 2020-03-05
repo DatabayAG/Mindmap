@@ -273,7 +273,8 @@
 
 
 	var addLernstand = function(lernstand) {
-		if(typeof(lernstand)=="undefined" || lernstand==null || lernstand=="") return;
+		var all = ["completed", "in_progress", "failed", "not_attempted"];
+		if(typeof(lernstand)=="undefined" || lernstand==null || lernstand=="" || all.indexOf(lernstand)==-1) return;
 		var res = '<div style="width: 0;height:0;float:left;position:relative;left:-12px;top:-15px;">';
 		res += '<img src="templates/default/images/scorm/'+lernstand+'.svg" style="width:18px;height:18px;">';
 		res += '</div>';
