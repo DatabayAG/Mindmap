@@ -363,7 +363,7 @@
 
 	    if(!mindmap.editable) {
 
-			if(mindmap.nodes[mindmap.edges[i].to].linktype) {
+			if(mindmap.nodes[mindmap.edges[i].to].linktype=="lernstand") {
 				var lernstand = mindmap.nodes[mindmap.edges[i].to].lernstand + "";
 				v += addLernstand(lernstand);
 			}
@@ -377,7 +377,7 @@
 		    }
 	    } else {
 
-			if(mindmap.nodes[mindmap.edges[i].to].linktype) {
+			if(mindmap.nodes[mindmap.edges[i].to].linktype=="lernstand") {
 				var lernstand = mindmap.nodes[mindmap.edges[i].to].lernstand + "";
 				v += addLernstand("not_attempted");
 			}
