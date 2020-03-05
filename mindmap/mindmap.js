@@ -360,18 +360,24 @@
 				v += "</span>";
 	    }
 
-		var lernstand = mindmap.nodes[mindmap.edges[i].to].lernstand+"";
-		v += addLernstand(lernstand);
-	    
+
 	    if(!mindmap.editable) {
-		    if(mindmap.nodes[mindmap.edges[i].to].linktype=="extern") {
+
+			var lernstand = mindmap.nodes[mindmap.edges[i].to].lernstand+"";
+			v += addLernstand(lernstand);
+
+			if(mindmap.nodes[mindmap.edges[i].to].linktype=="extern") {
 			    v = "<a href='"+mindmap.nodes[mindmap.edges[i].to].linktarget+"' target='_blank' style='text-decoration: none; border-bottom:1px solid;'>"+v+"</a>";
-		    } else if(mindmap.nodes[mindmap.edges[i].to].linktype=="intern" || mindmap.nodes[mindmap.edges[i].to].linktype=="lernpfad") {
+		    } else if(mindmap.nodes[mindmap.edges[i].to].linktype=="intern" || mindmap.nodes[mindmap.edges[i].to].linktype=="lernstand") {
 			    if(typeof(internlinks[mindmap.nodes[mindmap.edges[i].to].linktarget])!="undefined") {
 				    v = "<a href='"+internlinks[mindmap.nodes[mindmap.edges[i].to].linktarget]+"' style='text-decoration: none; border-bottom:1px dashed;'>"+v+"</a>";
 			    }
 		    }
 	    } else {
+
+			var lernstand = mindmap.nodes[mindmap.edges[i].to].lernstand+"";
+			v += addLernstand("not_attempted");
+
 		    if(mindmap.nodes[mindmap.edges[i].to].linktype=="extern") {
 			    v = "<span style='text-decoration: none; border-bottom:1px solid;'>"+v+"</span>";
 		    } else if(mindmap.nodes[mindmap.edges[i].to].linktype=="intern" || mindmap.nodes[mindmap.edges[i].to].linktype=="lernstand") {
