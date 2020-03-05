@@ -269,9 +269,15 @@
                 highlightNode.call(mindmap, mindmap.activeObj);
                 
 	    });
-	};    
-    
-    var rebuildTree = function(mindmap) {
+	};
+
+
+	var addLernstand = function(lernstand) {
+		return '<div style="width: 0;height:0;float:left;position:relative;left:-12px;top:-15px;">X</div>';
+	}
+
+
+	var rebuildTree = function(mindmap) {
 
 	rebuildJSON.call(mindmap);
 	    
@@ -289,9 +295,13 @@
 	var info = mindmap.nodes['root'].infotext+"";
 	    if(info=="undefined") info = "";
 	    if(info!="") {
-		    v += "<span class='simpletip'>&nbsp;*<div style='display:none;'>"+nl2br(info)+"</div></span>";
+		    v += "<span class='simpletip'>";
+			v += "&nbsp;*";
+			v += "<div style='display:none;'>"+nl2br(info)+"</div>";
+			v += "</span>";
 	    }
-
+	var lernstand = mindmap.nodes['root'].lernstand+"";
+	v += addLernstand(lernstand);
 	
 	var  M = $('<div></div>');
              M.attr('id', mindmap.nodes['root'].id)
@@ -336,8 +346,14 @@
 	    var info = mindmap.nodes[mindmap.edges[i].to].infotext+"";
 	    if(info=="undefined") info = "";
 	    if(info!="") {
-	    	    v += "<span class='simpletip'>&nbsp;*<div style='display:none;'>"+nl2br(info)+"</div></span>";
+	    	    v += "<span class='simpletip'>";
+				v += "&nbsp;*";
+				v += "<div style='display:none;'>"+nl2br(info)+"</div>";
+				v += "</span>";
 	    }
+
+		var lernstand = mindmap.nodes[mindmap.edges[i].to].lernstand+"";
+		v += addLernstand(lernstand);
 	    
 	    if(!mindmap.editable) {
 		    if(mindmap.nodes[mindmap.edges[i].to].linktype=="extern") {
@@ -623,7 +639,7 @@
 
 	}
     };    
-    
+
     var deleteNode = function(mindmap) {
 	    var id = mindmap.activeObj.attr('id');
 	    deleteAbove.call(mindmap,id);
@@ -864,6 +880,7 @@
                 info += "<option value=''>"+MMLang.kein_Link+"</option>";
                 info += "<option value='extern' "+(this.nodes[myid].linktype=='extern' ? 'selected' : '')+">"+MMLang.externer_Link+"</option>";
                 info += "<option value='intern' "+(this.nodes[myid].linktype=='intern' ? 'selected' : '')+">"+MMLang.interner_Link+" (RefID)</option>";
+				info += "<option value='lernstand' "+(this.nodes[myid].linktype=='lernstand' ? 'selected' : '')+">"+MMLang.lernstand+" (RefID)</option>";
                 info += "</select>";
                 info += "<br/><br/>";
                 info += '<div style="font-size:8pt;color: #555555;">URL '+MMLang.oder+' RefID</div>';
