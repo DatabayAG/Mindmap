@@ -1,6 +1,6 @@
 <?php
 
-include_once("./Services/Component/classes/class.ilPluginConfigGUI.php");
+#include_once("./Services/Component/classes/class.ilPluginConfigGUI.php");
  
 /**
  * Mindmap configuration user interface class
@@ -8,13 +8,15 @@ include_once("./Services/Component/classes/class.ilPluginConfigGUI.php");
  * @author Aresch Yavari <ay@databay.de>
  * @version $Id$
  *
+ * @ilCtrl_IsCalledBy ilMindmapConfigGUI: ilObjComponentSettingsGUI
+ *
  */
 class ilMindmapConfigGUI extends ilPluginConfigGUI
 {
 	/**
 	* Handles all commmands, default is "configure"
 	*/
-	function performCommand($cmd)
+	function performCommand(string $cmd): void
 	{
 
 		switch ($cmd)

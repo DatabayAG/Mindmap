@@ -1,6 +1,6 @@
 <?php
 
-include_once("./Services/Repository/classes/class.ilObjectPluginGUI.php");
+#include_once("./Services/Repository/classes/class.ilObjectPluginGUI.php");
 
 /**
 * User Interface class for mindmap repository object.
@@ -26,14 +26,14 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 	/**
 	* Initialisation
 	*/
-	protected function afterConstructor()
+	protected function afterConstructor(): void
 	{
 	}
 	
 	/**
 	* Get type.
 	*/
-	final function getType()
+	final function getType(): string
 	{
 		return "xmmp";
 	}
@@ -41,7 +41,7 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 	/**
 	* Handles all commmands of this class, centralizes permission checks
 	*/
-	function performCommand($cmd)
+	function performCommand(string $cmd): void
 	{
 		switch ($cmd)
 		{
@@ -67,7 +67,7 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 	/**
 	* After object has been created -> jump to this command
 	*/
-	function getAfterCreationCmd()
+	function getAfterCreationCmd(): string
 	{
 		return "editProperties";
 	}
@@ -75,7 +75,7 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 	/**
 	* Get standard command
 	*/
-	function getStandardCmd()
+	function getStandardCmd(): string
 	{
 		return "showContent";
 	}
@@ -83,7 +83,7 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 	/**
 	* show information screen
 	*/
-	function infoScreen()
+	function infoScreen(): void
 	{
 		global $ilAccess, $ilUser, $lng, $ilCtrl, $tpl, $ilTabs;
 
@@ -123,7 +123,7 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 	/**
 	* Set tabs
 	*/
-	function setTabs()
+	function setTabs(): void
 	{
 		global $ilTabs, $ilCtrl, $ilAccess;
 		
@@ -235,8 +235,8 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 		
 		$ilTabs->activateTab("content");
 
-                $this->dataDir = ilUtil::getDataDir().'/mindmap';
-		if(!file_exists($this->dataDir)) ilUtil::makeDirParents($this->dataDir);
+                $this->dataDir = ilFileUtils::getDataDir().'/mindmap';
+		if(!file_exists($this->dataDir)) ilFileUtils::makeDirParents($this->dataDir);
                 
                 $fn = $this->dataDir.'/mindmap_'.$this->object->getRefId().'.json';
                 
@@ -250,7 +250,7 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
                 $D = json_decode($data, true);
                 $intern = array();
                 foreach($D['nodes'] as $key => $node) {
-                	if($node["linktype"]=="intern") {
+                	if(isset($node["linktype"]) && $node["linktype"]=="intern") {
                 		if (is_file("./classes/class.ilLink.php")) include_once("./classes/class.ilLink.php");
                                 else include_once("./Services/Link/classes/class.ilLink.php");
 				$interlink = ilLink::_getLink($node['linktarget']);                                    
@@ -278,8 +278,8 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 		
 		$ilTabs->activateTab("edit");
 
-                $this->dataDir = ilUtil::getDataDir().'/mindmap';
-		if(!file_exists($this->dataDir)) ilUtil::makeDirParents($this->dataDir);
+                $this->dataDir = ilFileUtils::getDataDir().'/mindmap';
+		if(!file_exists($this->dataDir)) ilFileUtils::makeDirParents($this->dataDir);
                 
                 $fn = $this->dataDir.'/mindmap_'.$this->object->getRefId().'.json';
                 
@@ -293,7 +293,7 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
                 }
                 
                 
-                if($data=="") $data = '{"edges": [], "nodes": {"root": {"id": "root", "title":"Mindmap", "x":0, "y":0}}}';
+                if(!isset($data) || $data=="") $data = '{"edges": [], "nodes": {"root": {"id": "root", "title":"Mindmap", "x":0, "y":0}}}';
                 
                 $html = file_get_contents(dirname(__FILE__)."/../templates/mm_lang.html");
 		$html .= file_get_contents(dirname(__FILE__)."/../templates/mm_edit.html"); 

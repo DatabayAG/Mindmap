@@ -1,6 +1,6 @@
 <?php
 
-include_once("./Services/Repository/classes/class.ilRepositoryObjectPlugin.php");
+include_once("./Services/Repository/PluginSlot/class.ilRepositoryObjectPlugin.php");
  
 /**
 * Mindmap repository object plugin
@@ -12,10 +12,10 @@ include_once("./Services/Repository/classes/class.ilRepositoryObjectPlugin.php")
 */
 class ilMindmapPlugin extends ilRepositoryObjectPlugin
 {
-	protected function uninstallCustom() {
+	protected function uninstallCustom(): void {
 	}
 	
-	function getPluginName()
+	function getPluginName(): string
 	{
 		return "Mindmap";
 	}

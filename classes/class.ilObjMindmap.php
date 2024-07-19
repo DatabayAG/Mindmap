@@ -1,6 +1,6 @@
 <?php
 
-include_once("./Services/Repository/classes/class.ilObjectPlugin.php");
+include_once("./Services/Repository/PluginSlot/class.ilObjectPlugin.php");
 
 /**
 * Application class for mindmap repository object.
@@ -26,7 +26,7 @@ class ilObjMindmap extends ilObjectPlugin
 	* Get type.
 	* The initType() method must set the same ID as the plugin ID.
 	*/
-	final function initType()
+	final function initType(): void
 	{
 		$this->setType("xmmp");
 	}
@@ -39,7 +39,7 @@ class ilObjMindmap extends ilObjectPlugin
 	* It is also possible to use multiple tables.
 	* Standard properites like title and description are handled by the parent classes.
 	*/
-	function doCreate()
+	function doCreate(bool $clone_mode = false): void
 	{
 		global $ilDB;
 		// $myID = $this->getId();
@@ -51,7 +51,7 @@ class ilObjMindmap extends ilObjectPlugin
 	* This method is called when an instance of a repository object is created and an existing Reference-ID is provided to the constructor.
 	* All you need to do is to read the properties of your object from the database and to call the corresponding set-methods.
 	*/
-	function doRead()
+	function doRead(): void
 	{
 		global $ilDB;
 		// $myID = $this->getId();
@@ -62,7 +62,7 @@ class ilObjMindmap extends ilObjectPlugin
 	* Update data
 	* This method is called, when an existing object is updated.
 	*/
-	function doUpdate()
+	function doUpdate(): void
 	{
 		global $ilDB;
 		// $myID = $this->getId();
@@ -74,7 +74,7 @@ class ilObjMindmap extends ilObjectPlugin
 	* This method is called, when a repository object is finally deleted from the system.
 	* It is not called if an object is moved to the trash.
 	*/
-	function doDelete()
+	function doDelete(): void
 	{
 		global $ilDB;
 		// $myID = $this->getId();

@@ -1,7 +1,7 @@
 <?php
 
 
-include_once "./Services/Repository/classes/class.ilObjectPluginListGUI.php";
+#include_once "./Services/Repository/classes/class.ilObjectPluginListGUI.php";
 
 /**
 * ListGUI implementation for Mindmap object plugin. This one
@@ -27,7 +27,7 @@ class ilObjMindmapListGUI extends ilObjectPluginListGUI
 	/**
 	* Get name of gui class handling the commands
 	*/
-	function getGuiClass()
+	function getGuiClass(): string
 	{
 		return "ilObjMindmapGUI";
 	}
@@ -35,7 +35,7 @@ class ilObjMindmapListGUI extends ilObjectPluginListGUI
 	/**
 	* Get commands
 	*/
-	function initCommands()
+	function initCommands(): array
 	{
 		return array
 		(
@@ -59,13 +59,13 @@ class ilObjMindmapListGUI extends ilObjectPluginListGUI
 	*						"property" (string) => property name
 	*						"value" (string) => property value
 	*/
-	function getProperties()
+	function getProperties(): array
 	{
 		global $lng, $ilUser;
 
 		$props = array();
 		
-		$this->plugin->includeClass("class.ilObjMindmapAccess.php");
+		#$this->plugin->includeClass("class.ilObjMindmapAccess.php");
 
 		return $props;
 	}

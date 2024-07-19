@@ -1,6 +1,6 @@
 <?php
 
-include_once("./Services/Repository/classes/class.ilObjectPluginAccess.php");
+#include_once("./Services/Repository/PluginSlot/class.ilObjectPluginAccess.php");
 
 /**
 * Access/Condition checking for Mindmap object
@@ -29,19 +29,19 @@ class ilObjMindmapAccess extends ilObjectPluginAccess
 	*
 	* @return	boolean		true, if everything is ok
 	*/
-	function _checkAccess($a_cmd, $a_permission, $a_ref_id, $a_obj_id, $a_user_id = "")
+	function _checkAccess(string $cmd, string $permission, int $ref_id, int $obj_id, ?int $user_id = null): bool
 	{
 		global $ilUser, $ilAccess;
 
-		if ($a_user_id == "")
+		if (!isset($user_id) || $user_id == "")
 		{
-			$a_user_id = $ilUser->getId();
+			$user_id = $ilUser->getId();
 		}
 
-		switch ($a_permission)
+		switch ($permission)
 		{
 			case "read":
-				if (!$ilAccess->checkAccessOfUser($a_user_id, "write", "", $a_ref_id))
+				if (!$ilAccess->checkAccessOfUser($user_id, "write", "", $ref_id))
 				{
 					#return false;
 				}
