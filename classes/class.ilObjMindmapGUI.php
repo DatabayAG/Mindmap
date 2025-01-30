@@ -24,6 +24,16 @@
 class ilObjMindmapGUI extends ilObjectPluginGUI
 {
 	/**
+ 	* Property form
+  	*/
+	private $form;
+
+	/**
+ 	* Data directory
+  	*/
+	private $dataDir;
+
+	/**
 	* Initialisation
 	*/
 	protected function afterConstructor(): void
