@@ -10,7 +10,7 @@ objs_xmmp_duplicate#:#Mindmap kopieren
 obj_xmmp_select#:#Mindmap auswählen
 xmmp_add#:#Mindmap hinzufügen
 xmmp_new#:#Mindmap neu anlegen
-xmmp_read#:#Lesenzugriff Mindmap
+xmmp_read#:#Lesezugriff Mindmap
 xmmp_write#:#Mindmap bearbeiten
 xmmp_delete#:#Mindmap löschen
 xmmp_visible#:#Mindmap ist sichtbar
@@ -46,7 +46,7 @@ um_mehrere_Knoten_nebeneinander_zu_erstellen#:#um mehrere Knoten nebeneinander z
 um_mehrere_Knoten_hintereinander_zu_erstellen#:#um mehrere Knoten hintereinander zu erstellen
 Beschreibung#:#Beschreibung
 Schriftfarbe#:#Schriftfarbe
-Schriftgroesse#:#Schriftgr&ouml;&szlig;e
+Schriftgroesse#:#Schriftgröße
 Hintergrundfarbe#:#Hintergrundfarbe
 Rahmenfarbe#:#Rahmenfarbe
 Dicke#:#Dicke
@@ -60,13 +60,13 @@ kein_Link#:#kein Link
 externer_Link#:#externer Link
 interner_Link#:#interner Link
 oder#:#oder
-hinzufuegen#:#Knoten anf&uuml;gen
+hinzufuegen#:#Knoten anfügen
 bearbeiten#:#bearbeiten
-loeschen#:#loeschen
+loeschen#:#löschen
 umhaengen#:#Knoten umhängen
 hieranhaengen#:#an markierten Knoten anhängen
 amEnde#:#am Ende
 amAnfang#:#am Anfang
 amAnfangundamEnde#:#am Anfang und am Ende
 ohnePfeilspitzen#:#ohne Pfeilspitze
-Diesen_Knoten_inkl_Unterknoten_loeschen#:#Diesen Knoten inkl. Unterknoten l&ouml;schen
+Diesen_Knoten_inkl_Unterknoten_loeschen#:#Diesen Knoten inkl. Unterknoten löschen
