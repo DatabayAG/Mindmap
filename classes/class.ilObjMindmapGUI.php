@@ -29,7 +29,7 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 	protected function afterConstructor(): void
 	{
 	}
-	
+
 	/**
 	* Get type.
 	*/
@@ -37,7 +37,7 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 	{
 		return "xmmp";
 	}
-	
+
 	/**
 	* Handles all commmands of this class, centralizes permission checks
 	*/
@@ -45,19 +45,19 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 	{
 		switch ($cmd)
 		{
-			case "editProperties":		
+			case "editProperties":
 			case "updateProperties":
-			
+
 				$this->checkPermission("write");
 				$this->$cmd();
 				break;
-			
-			case "showContent":			
-			
+
+			case "showContent":
+
 				$this->checkPermission("read");
 				$this->$cmd();
 				break;
-			case "showEdit":			
+			case "showEdit":
 				$this->checkPermission("read");
 				$this->$cmd();
 				break;
@@ -95,8 +95,8 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 		$info = new ilInfoScreenGUI($this);
 
 		$info->addSection($this->txt("plugininfo"));
-		$info->addProperty('Name', 'Mindmap');
-		$info->addProperty('Version', xmmp_version);
+		$info->addProperty('Name', $this->plugin->getPluginName());
+		$info->addProperty('Version', $this->plugin->getVersion());
 		$info->addProperty('Developer', 'Aresch Yavari');
 		$info->addProperty('Kontakt', 'ay@databay.de');
 		$info->addProperty('&nbsp;', 'Databay AG');
@@ -107,27 +107,27 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 
 		$info->enablePrivateNotes();
 
-		
+
 		$lng->loadLanguageModule("meta");
 
 		$this->addInfoItems($info);
 
 
-		
+
 		$ret = $ilCtrl->forwardCommand($info);
 
 
-		
+
 	}
-	
+
 	/**
 	* Set tabs
 	*/
 	function setTabs(): void
 	{
 		global $ilTabs, $ilCtrl, $ilAccess;
-		
-		
+
+
 		if ($ilAccess->checkAccess("read", "", $this->object->getRefId()))
 		{
 			$ilTabs->addTab("content", $this->txt("mindmap"), $ilCtrl->getLinkTarget($this, "showContent"));
@@ -137,20 +137,20 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 		{
 			$ilTabs->addTab("edit", $this->txt("editmap"), $ilCtrl->getLinkTarget($this, "showEdit"));
 		}
-                
-		
+
+
 		$this->addInfoTab();
 
-		
+
 		if ($ilAccess->checkAccess("write", "", $this->object->getRefId()))
 		{
 			$ilTabs->addTab("properties", $this->txt("properties"), $ilCtrl->getLinkTarget($this, "editProperties"));
 		}
 
-		
+
 		$this->addPermissionTab();
 	}
-	
+
 
 	/**
 	* Edit Properties. This commands uses the form class to display an input form.
@@ -158,13 +158,13 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 	function editProperties()
 	{
 		global $tpl, $ilTabs;
-		
+
 		$ilTabs->activateTab("properties");
 		$this->initPropertiesForm();
 		$this->getPropertiesValues();
 		$tpl->setContent($this->form->getHTML());
 	}
-	
+
 	/**
 	* Init  form.
 	*
@@ -173,26 +173,26 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 	public function initPropertiesForm()
 	{
 		global $ilCtrl;
-	
+
 		include_once("Services/Form/classes/class.ilPropertyFormGUI.php");
 		$this->form = new ilPropertyFormGUI();
-	
-		
+
+
 		$ti = new ilTextInputGUI($this->txt("title"), "title");
 		$ti->setRequired(true);
 		$this->form->addItem($ti);
-		
-		
+
+
 		$ta = new ilTextAreaInputGUI($this->txt("description"), "desc");
 		$this->form->addItem($ta);
-		
+
 
 		$this->form->addCommandButton("updateProperties", $this->txt("save"));
-	                
+
 		$this->form->setTitle($this->txt("edit_properties"));
 		$this->form->setFormAction($ilCtrl->getFormAction($this));
 	}
-	
+
 	/**
 	* Get values for edit properties form
 	*/
@@ -202,14 +202,14 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 		$values["desc"] = $this->object->getDescription();
 		$this->form->setValuesByArray($values);
 	}
-	
+
 	/**
 	* Update properties
 	*/
 	public function updateProperties()
 	{
 		global $tpl, $lng, $ilCtrl;
-	
+
 		$this->initPropertiesForm();
 		if ($this->form->checkInput())
 		{
@@ -223,7 +223,7 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 		$this->form->setValuesByPost();
 		$tpl->setContent($this->form->getHtml());
 	}
-	
+
 
 
 	/**
@@ -232,90 +232,90 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 	function showContent()
 	{
 		global $tpl, $ilTabs;
-		
+
 		$ilTabs->activateTab("content");
 
                 $this->dataDir = ilFileUtils::getDataDir().'/mindmap';
 		if(!file_exists($this->dataDir)) ilFileUtils::makeDirParents($this->dataDir);
-                
+
                 $fn = $this->dataDir.'/mindmap_'.$this->object->getRefId().'.json';
-                
+
                 $data = "";
 		if(file_exists($fn)) {
                     $data = file_get_contents($fn);
                 }
-                
+
                 if($data=="") $data = '{"edges": [], "nodes": {"root": {"id": "root", "title":"Mindmap", "x":0, "y":0}}}';
-                
+
                 $D = json_decode($data, true);
                 $intern = array();
                 foreach($D['nodes'] as $key => $node) {
                 	if(isset($node["linktype"]) && $node["linktype"]=="intern") {
                 		if (is_file("./classes/class.ilLink.php")) include_once("./classes/class.ilLink.php");
                                 else include_once("./Services/Link/classes/class.ilLink.php");
-				$interlink = ilLink::_getLink($node['linktarget']);                                    
-                		
+				$interlink = ilLink::_getLink($node['linktarget']);
+
                 		$intern[$node['linktarget']] = $interlink;
                 	}
                 }
-                
+
 		$html = file_get_contents(dirname(__FILE__)."/../templates/mm_lang.html");
-		$html .= file_get_contents(dirname(__FILE__)."/../templates/mm.html"); 
+		$html .= file_get_contents(dirname(__FILE__)."/../templates/mm.html");
                 $html = str_replace("#MINDMAPDATA#", $data, $html);
                 $html = str_replace("#INTERNLINKS#", json_encode($intern), $html);
-                
+
                 $html = $this->translate($html);
-                
+
 		$tpl->setContent($html);
 	}
-        
+
 	/**
 	* Show content
 	*/
 	function showEdit()
 	{
 		global $tpl, $ilTabs;
-		
+
 		$ilTabs->activateTab("edit");
 
                 $this->dataDir = ilFileUtils::getDataDir().'/mindmap';
 		if(!file_exists($this->dataDir)) ilFileUtils::makeDirParents($this->dataDir);
-                
+
                 $fn = $this->dataDir.'/mindmap_'.$this->object->getRefId().'.json';
-                
+
                 if($_POST["sendmindmap"]==1) {
                     file_put_contents($fn, $_POST["mindmapdata"]);
                     file_put_contents($fn.".".date("YmdHis"), $_POST["mindmapdata"]);
                 }
-                
+
 		if(file_exists($fn)) {
                     $data = file_get_contents($fn);
                 }
-                
-                
+
+
                 if(!isset($data) || $data=="") $data = '{"edges": [], "nodes": {"root": {"id": "root", "title":"Mindmap", "x":0, "y":0}}}';
-                
+
                 $html = file_get_contents(dirname(__FILE__)."/../templates/mm_lang.html");
-		$html .= file_get_contents(dirname(__FILE__)."/../templates/mm_edit.html"); 
+		$html .= file_get_contents(dirname(__FILE__)."/../templates/mm_edit.html");
                 $html = str_replace("#MINDMAPDATA#", $data, $html);
-                
+
                 $html = $this->translate($html);
-                
+
 		$tpl->setContent($html);
-	}        
-	
+	}
+
 	private function translate($html) {
-		
+
 		$anz = preg_match_all("/#!(.*?)!#/", $html, $matches);
-		
+
 		for($i=0;$i<$anz;$i++) {
 			$html = str_replace($matches[0][$i], $this->txt($matches[1][$i]), $html);
 		}
-		
-		
+
+
 		return $html;
 	}
-	
+
 
 }
 ?>
