@@ -216,7 +216,7 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 			$this->object->setTitle($this->form->getInput("title"));
 			$this->object->setDescription($this->form->getInput("desc"));
 			$this->object->update();
-			ilUtil::sendSuccess($lng->txt("msg_obj_modified"), true);
+			$this->tpl->setOnScreenMessage("success", $lng->txt("msg_obj_modified"), true);
 			$ilCtrl->redirect($this, "editProperties");
 		}
 
