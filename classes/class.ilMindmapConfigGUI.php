@@ -83,8 +83,7 @@ class ilMindmapConfigGUI extends ilPluginConfigGUI
 		{
 	
 			// @todo: implement saving to db
-			
-			ilUtil::sendSuccess($pl->txt("saving_invoked"), true);
+			$tpl->setOnScreenMessage("success", $pl->txt("saving_invoked"), true);
 			$ilCtrl->redirect($this, "configure");
 		}
 		else
