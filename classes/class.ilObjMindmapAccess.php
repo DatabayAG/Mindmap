@@ -1,7 +1,5 @@
 <?php
 
-#include_once("./Services/Repository/PluginSlot/class.ilObjectPluginAccess.php");
-
 /**
 * Access/Condition checking for Mindmap object
 *
@@ -50,8 +48,6 @@ class ilObjMindmapAccess extends ilObjectPluginAccess
 
 		return true;
 	}
-	
-	
-}
 
-?>
+
+}

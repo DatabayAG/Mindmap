@@ -1,7 +1,5 @@
 <?php
 
-#include_once("./Services/Component/classes/class.ilPluginConfigGUI.php");
- 
 /**
  * Mindmap configuration user interface class
  *
@@ -39,12 +37,12 @@ class ilMindmapConfigGUI extends ilPluginConfigGUI
 		$form = $this->initConfigurationForm();
 		$tpl->setContent($form->getHTML());
 	}
-	
+
 	//
 	// From here on, this is just an mindmap implementation using
 	// a standard form (without saving anything)
 	//
-	
+
 	/**
 	 * Init configuration form.
 	 *
@@ -53,21 +51,20 @@ class ilMindmapConfigGUI extends ilPluginConfigGUI
 	public function initConfigurationForm()
 	{
 		global $lng, $ilCtrl;
-		
+
 		$pl = $this->getPluginObject();
-	
-		include_once("Services/Form/classes/class.ilPropertyFormGUI.php");
+
 		$form = new ilPropertyFormGUI();
-	
-	
+
+
 		$form->addCommandButton("save", $lng->txt("save"));
-	                
+
 		$form->setTitle($pl->txt("mindmap_plugin_configuration"));
 		$form->setFormAction($ilCtrl->getFormAction($this));
-		
+
 		return $form;
 	}
-	
+
 	/**
 	 * Save form input (currently does not save anything to db)
 	 *
@@ -75,13 +72,13 @@ class ilMindmapConfigGUI extends ilPluginConfigGUI
 	public function save()
 	{
 		global $tpl, $lng, $ilCtrl;
-	
+
 		$pl = $this->getPluginObject();
-		
+
 		$form = $this->initConfigurationForm();
 		if ($form->checkInput())
 		{
-	
+
 			// @todo: implement saving to db
 			$tpl->setOnScreenMessage("success", $pl->txt("saving_invoked"), true);
 			$ilCtrl->redirect($this, "configure");
@@ -94,4 +91,3 @@ class ilMindmapConfigGUI extends ilPluginConfigGUI
 	}
 
 }
-?>

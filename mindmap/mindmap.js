@@ -503,7 +503,7 @@
     		}
     		
     		
-    		$('.mindmapbackground').css("background-image", "url(Customizing/global/plugins/Services/Repository/RepositoryObject/Mindmap/mindmap/background.php?edges="+edges+"&arrows="+arrows+")");
+    		$('.mindmapbackground').css("background-image", "url("+this.path+"/background.php?edges="+edges+"&arrows="+arrows+")");
     		// @todo Linien ohne Canvas zeichnen.
     		return;
     	}

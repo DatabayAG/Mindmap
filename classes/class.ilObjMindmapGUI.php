@@ -1,7 +1,5 @@
 <?php
 
-#include_once("./Services/Repository/classes/class.ilObjectPluginGUI.php");
-
 /**
 * User Interface class for mindmap repository object.
 *
@@ -23,6 +21,9 @@
 */
 class ilObjMindmapGUI extends ilObjectPluginGUI
 {
+	protected ?ilPropertyFormGUI $form = null;
+	protected string $dataDir = '';
+
 	/**
 	* Initialisation
 	*/
@@ -91,7 +92,6 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 
 		$this->checkPermission("visible");
 
-		include_once("./Services/InfoScreen/classes/class.ilInfoScreenGUI.php");
 		$info = new ilInfoScreenGUI($this);
 
 		$info->addSection($this->txt("plugininfo"));
@@ -174,7 +174,6 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 	{
 		global $ilCtrl;
 
-		include_once("Services/Form/classes/class.ilPropertyFormGUI.php");
 		$this->form = new ilPropertyFormGUI();
 
 
@@ -251,18 +250,17 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
                 $intern = array();
                 foreach($D['nodes'] as $key => $node) {
                 	if(isset($node["linktype"]) && $node["linktype"]=="intern") {
-                		if (is_file("./classes/class.ilLink.php")) include_once("./classes/class.ilLink.php");
-                                else include_once("./Services/Link/classes/class.ilLink.php");
 				$interlink = ilLink::_getLink($node['linktarget']);
 
                 		$intern[$node['linktarget']] = $interlink;
                 	}
                 }
 
-		$html = file_get_contents(dirname(__FILE__)."/../templates/mm_lang.html");
+                $html = file_get_contents(dirname(__FILE__)."/../templates/mm_lang.html");
 		$html .= file_get_contents(dirname(__FILE__)."/../templates/mm.html");
                 $html = str_replace("#MINDMAPDATA#", $data, $html);
                 $html = str_replace("#INTERNLINKS#", json_encode($intern), $html);
+                $html = str_replace("#ASSETPATH#", $this->getMindmapAssetPath(), $html);
 
                 $html = $this->translate($html);
 
@@ -298,10 +296,19 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
                 $html = file_get_contents(dirname(__FILE__)."/../templates/mm_lang.html");
 		$html .= file_get_contents(dirname(__FILE__)."/../templates/mm_edit.html");
                 $html = str_replace("#MINDMAPDATA#", $data, $html);
+                $html = str_replace("#ASSETPATH#", $this->getMindmapAssetPath(), $html);
 
                 $html = $this->translate($html);
 
 		$tpl->setContent($html);
+	}
+
+	/**
+	 * Web-relative path to the mindmap/ asset directory (under public/).
+	 */
+	private function getMindmapAssetPath(): string
+	{
+		return rtrim($this->plugin->getRelativeDirectory(), '/') . '/mindmap';
 	}
 
 	private function translate($html) {

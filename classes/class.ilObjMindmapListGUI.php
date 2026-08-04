@@ -1,8 +1,5 @@
 <?php
 
-
-#include_once "./Services/Repository/classes/class.ilObjectPluginListGUI.php";
-
 /**
 * ListGUI implementation for Mindmap object plugin. This one
 * handles the presentation in container items (categories, courses, ...)

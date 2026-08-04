@@ -1,19 +1,17 @@
 ******************************************************************************
-INSTALLATION INSTRUCTIONS   (You need at least ILIAS 4.0.0)
+INSTALLATION INSTRUCTIONS   (ILIAS 10)
 ******************************************************************************
 
-1. Copy the content of this folder in <ILIAS_directory>/Customizing/global/plugins/Services/Repository/RepositoryObject/Mindmap
+1. Copy this folder to:
+   <ILIAS_directory>/public/Customizing/global/plugins/Services/Repository/RepositoryObject/Mindmap
 
-2. Access to ILIAS and go to the administration page.
+2. Rebuild the Composer classmap from the ILIAS root:
+   composer du
 
-3. Select "Modules, Services and Plugins" in the menu on the right.
+3. Access ILIAS Administration → Plugins (or Modules, Services and Plugins).
 
-4. Stat the action "Administrate".
+4. Find Mindmap (xmmp), run Update, then Activate.
 
-5. Look for the Mindmap (xmmp) plugin on the table and hit the "update" link.
+5. Refresh language files if offered.
 
-6. When ILIAS update the plugin, hit the "activate" link that will appear instead of the "update" link.
-
-7. Hit the "refresh"-link to update the language-files.
-
-8. Now, you can create new mindmaps.
+6. Create new Mindmap repository objects as usual.

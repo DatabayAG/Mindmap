@@ -1,7 +1,5 @@
 <?php
 
-include_once("./Services/Repository/PluginSlot/class.ilObjectPlugin.php");
-
 /**
 * Application class for mindmap repository object.
 *
@@ -20,7 +18,7 @@ class ilObjMindmap extends ilObjectPlugin
 	{
 		parent::__construct($a_ref_id);
 	}
-	
+
 
 	/**
 	* Get type.
@@ -30,7 +28,7 @@ class ilObjMindmap extends ilObjectPlugin
 	{
 		$this->setType("xmmp");
 	}
-	
+
 	/**
 	* Create object
 	* This method is called, when a new repository object is created.
@@ -45,7 +43,7 @@ class ilObjMindmap extends ilObjectPlugin
 		// $myID = $this->getId();
 
 	}
-	
+
 	/**
 	* Read data from db
 	* This method is called when an instance of a repository object is created and an existing Reference-ID is provided to the constructor.
@@ -57,7 +55,7 @@ class ilObjMindmap extends ilObjectPlugin
 		// $myID = $this->getId();
 
 	}
-	
+
 	/**
 	* Update data
 	* This method is called, when an existing object is updated.
@@ -68,7 +66,7 @@ class ilObjMindmap extends ilObjectPlugin
 		// $myID = $this->getId();
 
 	}
-	
+
 	/**
 	* Delete data from db
 	* This method is called, when a repository object is finally deleted from the system.
@@ -78,9 +76,9 @@ class ilObjMindmap extends ilObjectPlugin
 	{
 		global $ilDB;
 		// $myID = $this->getId();
-		
+
 	}
-	
+
 	/**
 	* Do Cloning
 	* This method is called, when a repository object is copied.
@@ -90,7 +88,6 @@ class ilObjMindmap extends ilObjectPlugin
 		global $ilDB;
 
 	}
-	
+
 
 }
-?>
