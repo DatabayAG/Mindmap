@@ -25,8 +25,7 @@ oldjQuery(function() {
 </script>
 
 
-<form id="mindmapform" method="post">
-    <input type="hidden" name="sendmindmap" value="1" />
+<form id="mindmapform" method="post" action="#FORMACTION#">
     <input type="hidden" name="mindmapdata" id="mindmapdata" />
     <input type="button" value="#!mindmap_speichern!#" onclick="oldjQuery('#mindmapdata').val(oldjQuery('#map').data('mindmap').mindmap.json);oldjQuery('#mindmapform').submit();" class="submit"/>
 </form>

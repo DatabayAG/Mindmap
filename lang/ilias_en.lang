@@ -37,6 +37,7 @@ rep_robj_xmmp_obj_xmmp#:#Mindmap
 rep_robj_xmmp_mindmap_plugin_configuration#:#Konfiguration
 mindmap_plugin_configuration#:#Configuration
 saving_invoked#:#saved
+mindmap_invalid_data#:#The mindmap data is invalid and was not saved.
 mindmap_speichern#:#save mindmap
 Kein_Objekt_aktiv#:#no active object
 neuer_Knotenpunkt#:#new node

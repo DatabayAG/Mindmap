@@ -58,7 +58,8 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 				$this->$cmd();
 				break;
 			case "showEdit":
-				$this->checkPermission("read");
+			case "saveMindmap":
+				$this->checkPermission("write");
 				$this->$cmd();
 				break;
 		}
@@ -249,8 +250,8 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 
                 $html = file_get_contents(dirname(__FILE__)."/../templates/mm_lang.html");
 		$html .= file_get_contents(dirname(__FILE__)."/../templates/mm.html");
-                $html = str_replace("#MINDMAPDATA#", $data, $html);
-                $html = str_replace("#INTERNLINKS#", json_encode($intern), $html);
+                $html = str_replace("#MINDMAPDATA#", $this->encodeMindmapDataForJs($data), $html);
+                $html = str_replace("#INTERNLINKS#", json_encode($intern, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), $html);
                 $html = str_replace("#ASSETPATH#", $this->getMindmapAssetPath(), $html);
 
                 $html = $this->translate($html);
@@ -259,28 +260,44 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 	}
 
 	/**
-	* Show content
+	* Edit mindmap
 	*/
 	function showEdit()
 	{
-		global $tpl, $ilTabs;
+		global $tpl, $ilTabs, $ilCtrl;
 
 		$ilTabs->activateTab("edit");
-
-                if(isset($_POST["sendmindmap"]) && $_POST["sendmindmap"]==1) {
-                    $this->object->saveMindmapData((string) ($_POST["mindmapdata"] ?? ''));
-                }
 
                 $data = $this->object->getMindmapDataOrDefault();
 
                 $html = file_get_contents(dirname(__FILE__)."/../templates/mm_lang.html");
 		$html .= file_get_contents(dirname(__FILE__)."/../templates/mm_edit.html");
-                $html = str_replace("#MINDMAPDATA#", $data, $html);
+                $html = str_replace("#MINDMAPDATA#", $this->encodeMindmapDataForJs($data), $html);
                 $html = str_replace("#ASSETPATH#", $this->getMindmapAssetPath(), $html);
+                $html = str_replace("#FORMACTION#", htmlspecialchars($ilCtrl->getFormAction($this, "saveMindmap"), ENT_QUOTES, 'UTF-8'), $html);
 
                 $html = $this->translate($html);
 
 		$tpl->setContent($html);
+	}
+
+	/**
+	 * Persist mindmap JSON (POST + CSRF via form action).
+	 */
+	protected function saveMindmap(): void
+	{
+		global $ilCtrl;
+
+		$raw = (string) ($_POST["mindmapdata"] ?? '');
+		$error = $this->object->validateMindmapData($raw);
+		if ($error !== null) {
+			$this->tpl->setOnScreenMessage("failure", $this->txt($error), true);
+			$ilCtrl->redirect($this, "showEdit");
+		}
+
+		$this->object->saveMindmapData($raw);
+		$this->tpl->setOnScreenMessage("success", $this->txt("saving_invoked"), true);
+		$ilCtrl->redirect($this, "showEdit");
 	}
 
 	/**
@@ -289,6 +306,21 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 	private function getMindmapAssetPath(): string
 	{
 		return rtrim($this->plugin->getRelativeDirectory(), '/') . '/mindmap';
+	}
+
+	/**
+	 * Re-encode stored JSON for safe embedding inside a <script> block.
+	 */
+	private function encodeMindmapDataForJs(string $data): string
+	{
+		$decoded = json_decode($data, true);
+		if (!is_array($decoded)) {
+			$decoded = json_decode(ilObjMindmap::DEFAULT_MAP_JSON, true);
+		}
+		return (string) json_encode(
+			$decoded,
+			JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE
+		);
 	}
 
 	private function translate($html) {

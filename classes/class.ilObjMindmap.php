@@ -12,7 +12,9 @@ class ilObjMindmap extends ilObjectPlugin
 	/** @var list<int> */
 	private array $refs_to_cleanup = [];
 
-	private const DEFAULT_MAP_JSON = '{"edges": [], "nodes": {"root": {"id": "root", "title":"Mindmap", "x":0, "y":0}}}';
+	public const DEFAULT_MAP_JSON = '{"edges": [], "nodes": {"root": {"id": "root", "title":"Mindmap", "x":0, "y":0}}}';
+	private const MAX_JSON_BYTES = 2097152; // 2 MiB
+	private const MAX_NODES = 2000;
 
 	/**
 	* Constructor
@@ -135,8 +137,59 @@ class ilObjMindmap extends ilObjectPlugin
 		return $data !== '' ? $data : self::DEFAULT_MAP_JSON;
 	}
 
+	/**
+	 * Validate mindmap JSON payload. Returns a language variable on failure, null on success.
+	 */
+	public function validateMindmapData(string $json): ?string
+	{
+		if ($json === '' || strlen($json) > self::MAX_JSON_BYTES) {
+			return "mindmap_invalid_data";
+		}
+
+		$data = json_decode($json, true);
+		if (!is_array($data) || json_last_error() !== JSON_ERROR_NONE) {
+			return "mindmap_invalid_data";
+		}
+
+		if (!isset($data['edges'], $data['nodes']) || !is_array($data['edges']) || !is_array($data['nodes'])) {
+			return "mindmap_invalid_data";
+		}
+
+		if (count($data['nodes']) > self::MAX_NODES || count($data['edges']) > self::MAX_NODES) {
+			return "mindmap_invalid_data";
+		}
+
+		if (!isset($data['nodes']['root']) || !is_array($data['nodes']['root'])) {
+			return "mindmap_invalid_data";
+		}
+
+		foreach ($data['nodes'] as $id => $node) {
+			if (!is_string($id) || $id === '' || !is_array($node)) {
+				return "mindmap_invalid_data";
+			}
+			if (!isset($node['id']) || (string) $node['id'] !== $id) {
+				return "mindmap_invalid_data";
+			}
+		}
+
+		foreach ($data['edges'] as $edge) {
+			if (!is_array($edge) || !isset($edge['from'], $edge['to'])) {
+				return "mindmap_invalid_data";
+			}
+			if (!is_string($edge['from']) || !is_string($edge['to'])) {
+				return "mindmap_invalid_data";
+			}
+		}
+
+		return null;
+	}
+
 	public function saveMindmapData(string $json): void
 	{
+		if ($this->validateMindmapData($json) !== null) {
+			throw new InvalidArgumentException('Invalid mindmap JSON');
+		}
+
 		$path = self::getDataFilePathByObjId($this->getId());
 		file_put_contents($path, $json);
 		file_put_contents($path . '.' . date('YmdHis'), $json);
