@@ -22,7 +22,6 @@
 class ilObjMindmapGUI extends ilObjectPluginGUI
 {
 	protected ?ilPropertyFormGUI $form = null;
-	protected string $dataDir = '';
 
 	/**
 	* Initialisation
@@ -234,26 +233,18 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 
 		$ilTabs->activateTab("content");
 
-                $this->dataDir = ilFileUtils::getDataDir().'/mindmap';
-		if(!file_exists($this->dataDir)) ilFileUtils::makeDirParents($this->dataDir);
-
-                $fn = $this->dataDir.'/mindmap_'.$this->object->getRefId().'.json';
-
-                $data = "";
-		if(file_exists($fn)) {
-                    $data = file_get_contents($fn);
-                }
-
-                if($data=="") $data = '{"edges": [], "nodes": {"root": {"id": "root", "title":"Mindmap", "x":0, "y":0}}}';
+                $data = $this->object->getMindmapDataOrDefault();
 
                 $D = json_decode($data, true);
                 $intern = array();
+                if (is_array($D) && isset($D['nodes']) && is_array($D['nodes'])) {
                 foreach($D['nodes'] as $key => $node) {
                 	if(isset($node["linktype"]) && $node["linktype"]=="intern") {
 				$interlink = ilLink::_getLink($node['linktarget']);
 
                 		$intern[$node['linktarget']] = $interlink;
                 	}
+                }
                 }
 
                 $html = file_get_contents(dirname(__FILE__)."/../templates/mm_lang.html");
@@ -276,22 +267,11 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 
 		$ilTabs->activateTab("edit");
 
-                $this->dataDir = ilFileUtils::getDataDir().'/mindmap';
-		if(!file_exists($this->dataDir)) ilFileUtils::makeDirParents($this->dataDir);
-
-                $fn = $this->dataDir.'/mindmap_'.$this->object->getRefId().'.json';
-
-                if($_POST["sendmindmap"]==1) {
-                    file_put_contents($fn, $_POST["mindmapdata"]);
-                    file_put_contents($fn.".".date("YmdHis"), $_POST["mindmapdata"]);
+                if(isset($_POST["sendmindmap"]) && $_POST["sendmindmap"]==1) {
+                    $this->object->saveMindmapData((string) ($_POST["mindmapdata"] ?? ''));
                 }
 
-		if(file_exists($fn)) {
-                    $data = file_get_contents($fn);
-                }
-
-
-                if(!isset($data) || $data=="") $data = '{"edges": [], "nodes": {"root": {"id": "root", "title":"Mindmap", "x":0, "y":0}}}';
+                $data = $this->object->getMindmapDataOrDefault();
 
                 $html = file_get_contents(dirname(__FILE__)."/../templates/mm_lang.html");
 		$html .= file_get_contents(dirname(__FILE__)."/../templates/mm_edit.html");

@@ -9,85 +9,148 @@
 */
 class ilObjMindmap extends ilObjectPlugin
 {
+	/** @var list<int> */
+	private array $refs_to_cleanup = [];
+
+	private const DEFAULT_MAP_JSON = '{"edges": [], "nodes": {"root": {"id": "root", "title":"Mindmap", "x":0, "y":0}}}';
+
 	/**
 	* Constructor
 	*
 	* @access	public
 	*/
-	function __construct($a_ref_id = 0)
+	public function __construct($a_ref_id = 0)
 	{
 		parent::__construct($a_ref_id);
 	}
-
 
 	/**
 	* Get type.
 	* The initType() method must set the same ID as the plugin ID.
 	*/
-	final function initType(): void
+	final protected function initType(): void
 	{
 		$this->setType("xmmp");
 	}
 
-	/**
-	* Create object
-	* This method is called, when a new repository object is created.
-	* The Object-ID of the new object can be obtained by $this->getId().
-	* You can store any properties of your object that you need.
-	* It is also possible to use multiple tables.
-	* Standard properites like title and description are handled by the parent classes.
-	*/
-	function doCreate(bool $clone_mode = false): void
+	protected function doCreate(bool $clone_mode = false): void
 	{
-		global $ilDB;
-		// $myID = $this->getId();
+	}
 
+	protected function doRead(): void
+	{
+	}
+
+	protected function doUpdate(): void
+	{
+	}
+
+	protected function beforeDelete(): bool
+	{
+		$this->refs_to_cleanup = array_map(
+			'intval',
+			array_keys(ilObject::_getAllReferences($this->getId()))
+		);
+		return true;
 	}
 
 	/**
-	* Read data from db
-	* This method is called when an instance of a repository object is created and an existing Reference-ID is provided to the constructor.
-	* All you need to do is to read the properties of your object from the database and to call the corresponding set-methods.
-	*/
-	function doRead(): void
+	 * Remove mindmap JSON and timestamped backups when the object is finally deleted.
+	 */
+	protected function doDelete(): void
 	{
-		global $ilDB;
-		// $myID = $this->getId();
-
+		$this->deleteDataFiles(self::getDataFilePathByObjId($this->getId()));
+		foreach ($this->refs_to_cleanup as $ref_id) {
+			if ($ref_id > 0) {
+				$this->deleteDataFiles(self::getDataFilePathByRefId($ref_id));
+			}
+		}
 	}
 
 	/**
-	* Update data
-	* This method is called, when an existing object is updated.
-	*/
-	function doUpdate(): void
+	 * Copy mindmap content to the newly created object.
+	 */
+	protected function doCloneObject(ilObject2 $new_obj, int $a_target_id, ?int $a_copy_id = null): void
 	{
-		global $ilDB;
-		// $myID = $this->getId();
+		if (!$new_obj instanceof self) {
+			return;
+		}
 
+		$data = $this->getMindmapData();
+		if ($data !== '') {
+			$new_obj->saveMindmapData($data);
+		}
+	}
+
+	public static function getDataDirectory(): string
+	{
+		$dir = ilFileUtils::getDataDir() . '/mindmap';
+		if (!is_dir($dir)) {
+			ilFileUtils::makeDirParents($dir);
+		}
+		return $dir;
+	}
+
+	public static function getDataFilePathByObjId(int $obj_id): string
+	{
+		return self::getDataDirectory() . '/mindmap_obj_' . $obj_id . '.json';
 	}
 
 	/**
-	* Delete data from db
-	* This method is called, when a repository object is finally deleted from the system.
-	* It is not called if an object is moved to the trash.
-	*/
-	function doDelete(): void
+	 * Legacy path used before ILIAS 10 lifecycle fix (keyed by ref_id).
+	 */
+	public static function getDataFilePathByRefId(int $ref_id): string
 	{
-		global $ilDB;
-		// $myID = $this->getId();
-
+		return self::getDataDirectory() . '/mindmap_' . $ref_id . '.json';
 	}
 
 	/**
-	* Do Cloning
-	* This method is called, when a repository object is copied.
-	*/
-	function doClone($a_target_id,$a_copy_id,$new_obj)
+	 * Load JSON for this object. Migrates legacy ref_id files to obj_id on read.
+	 */
+	public function getMindmapData(): string
 	{
-		global $ilDB;
+		$obj_path = self::getDataFilePathByObjId($this->getId());
+		if (is_file($obj_path)) {
+			return (string) file_get_contents($obj_path);
+		}
 
+		$ref_id = $this->getRefId();
+		if ($ref_id > 0) {
+			$legacy = self::getDataFilePathByRefId($ref_id);
+			if (is_file($legacy)) {
+				$data = (string) file_get_contents($legacy);
+				file_put_contents($obj_path, $data);
+				// Drop legacy ref_id file + backups after successful migration
+				$this->deleteDataFiles($legacy);
+				return $data;
+			}
+		}
+
+		return '';
 	}
 
+	public function getMindmapDataOrDefault(): string
+	{
+		$data = $this->getMindmapData();
+		return $data !== '' ? $data : self::DEFAULT_MAP_JSON;
+	}
 
+	public function saveMindmapData(string $json): void
+	{
+		$path = self::getDataFilePathByObjId($this->getId());
+		file_put_contents($path, $json);
+		file_put_contents($path . '.' . date('YmdHis'), $json);
+	}
+
+	private function deleteDataFiles(string $path): void
+	{
+		if (is_file($path)) {
+			unlink($path);
+		}
+		foreach (glob($path . '.*') ?: [] as $backup) {
+			if (is_file($backup)) {
+				unlink($backup);
+			}
+		}
+	}
 }
