@@ -23,6 +23,8 @@ cat_create_xmmp#:#Erstelle Mindmap
 content#:#Inhalt
 editmap#:#Bearbeiten
 mindmap#:#Mindmap
+mindmap_navigation_hint#:#Ziehen Sie die Fläche, um zu navigieren.
+mindmap_editing_hint#:#Ziehen Sie die Fläche, um zu navigieren. Wählen Sie einen Knoten zum Bearbeiten aus.
 properties#:#Einstellungen
 edit_properties#:#Einstellungen bearbeiten
 title#:#Titel

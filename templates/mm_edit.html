@@ -2,30 +2,46 @@
 <link type="text/css" href="#ASSETPATH#/mindmap.css" rel="stylesheet" media="screen" />
 <script type="text/javascript" src="#ASSETPATH#/mindmap.js"></script>
 
-<input type="button" value="#!mindmap_speichern!#" onclick="oldjQuery('#mindmapdata').val(oldjQuery('#map').data('mindmap').mindmap.json);oldjQuery('#mindmapform').submit();" class="submit"/>
-<div id='map' style="width:500;height:400px;border: solid 1px #800000;position:relative;"></div>
+<form id="mindmapform" method="post" action="#FORMACTION#">
+    <input type="hidden" name="mindmapdata" id="mindmapdata" />
+    <div class="il-mindmap-shell il-mindmap-shell--edit">
+        <div class="il-mindmap-header">
+            <div>
+                <div class="il-mindmap-heading">#!editmap!#</div>
+                <div class="il-mindmap-hint">#!mindmap_editing_hint!#</div>
+            </div>
+            <button type="button" id="mindmap-save" class="btn btn-default il-mindmap-save">
+                #!mindmap_speichern!#
+            </button>
+        </div>
+        <div id="map" class="il-mindmap-canvas" aria-label="#!editmap!#"></div>
+    </div>
+</form>
 
 <script type="text/javascript">
-
 var oldjQuery = $;
 
 oldjQuery(function() {
-		var tree = #MINDMAPDATA#;
+    var tree = #MINDMAPDATA#;
+    var map = oldjQuery('#map');
 
-		var pos = $('#map').position();
-		var h = $(window).height()  - pos.top-10;
-		var w = $('#map').width();
-		if(h<500) h = 500;
-		oldjQuery('#map').css("height", h).css("width", w-20);
+    var resizeMap = function() {
+        var top = map.offset().top;
+        var height = Math.max(520, window.innerHeight - top - 32);
+        map.css('height', height);
+    };
 
-		oldjQuery('#map').mindmap({"tree": tree, "edit": true, "path": "#ASSETPATH#"});
+    resizeMap();
+    oldjQuery(window).on('resize.mindmap', resizeMap);
 
+    map.mindmap({"tree": tree, "edit": true, "path": "#ASSETPATH#"});
 
+    oldjQuery('#mindmap-save').on('click', function() {
+        oldjQuery('#mindmapform').trigger('submit');
+    });
+
+    oldjQuery('#mindmapform').on('submit', function() {
+        oldjQuery('#mindmapdata').val(map.data('mindmap').mindmap.json);
+    });
 });
 </script>
-
-
-<form id="mindmapform" method="post" action="#FORMACTION#">
-    <input type="hidden" name="mindmapdata" id="mindmapdata" />
-    <input type="button" value="#!mindmap_speichern!#" onclick="oldjQuery('#mindmapdata').val(oldjQuery('#map').data('mindmap').mindmap.json);oldjQuery('#mindmapform').submit();" class="submit"/>
-</form>

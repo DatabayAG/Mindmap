@@ -23,6 +23,8 @@ cat_create_xmmp#:#Create Mindmap
 content#:#Content
 editmap#:#Edit
 mindmap#:#Mindmap
+mindmap_navigation_hint#:#Drag the canvas to navigate.
+mindmap_editing_hint#:#Drag the canvas to navigate. Select a node to edit the map.
 properties#:#Properties
 edit_properties#:#Edit Properties
 title#:#Title

@@ -700,7 +700,7 @@
 
 	var editNode = function() {
 		    
-		$('.mindmapbutton').attr('disabled', 'disabled').css('color', 'gray');
+		$('.mindmapbutton').attr('disabled', 'disabled');
 		
 		var myid = this.activeObj.attr('id');
 		centerMindmap.call(this, myid);
@@ -724,7 +724,7 @@
                                 .bind("mousedown", function(e) { e.stopPropagation(); })
                                 .click( (function(id, mindmap) {
 										    return function() {
-											$('.mindmapbutton').removeAttr('disabled').css('color', 'black');;
+											$('.mindmapbutton').removeAttr('disabled');
 											
                                                                                         var text = mindmap.nodes[id].title;
                                                                                         var textta = mindmap.nodes[id].infotext;
@@ -884,7 +884,7 @@
 			     			.bind("mousedown", function(e) { e.stopPropagation(); })
 			     			.click( (function(id, mindmap) {
 										    return function() {
-											$('.mindmapbutton').removeAttr('disabled').css('color', 'black');;
+											$('.mindmapbutton').removeAttr('disabled');
 											var text = $('#edit_'+id).val();
 											var textta = $('#editta_'+id).val();
 
@@ -1076,16 +1076,8 @@
                     );
 
                     
-                    var barG = $('<div id="areabar"></div>').css('width', 2000)
-                                              .css('height', 30)
-                                              .css('background-color','silver')
-                                              .css('padding-left','10px')
-                                              .css('overflow','hidden')
-                                              .css('border-bottom', 'solid 1px gray')
-                                              .append('<div style="padding-top:2px;"></div>');
-                                              
-                    var barL = $('<div style="float:left;padding-top:3px;"></div>');
-                    var barR = $('<div style="float:right;padding-right:20px;"></div>');
+                    var barG = $('<div id="areabar" role="toolbar"></div>');
+                    var barL = $('<div class="mindmaptoolbar-actions"></div>');
                                               
                     var addButton = $('<input type="button" class="mindmapbutton" value="'+MMLang.hinzufuegen+'">').click( (function() {
                         return function() {
@@ -1144,10 +1136,7 @@
                             	
 
                             barG.append(barL);
-                            barG.append(barR);
-                            barG.append("<div style='clear:both;'></div>");
-
-			    $this.append($('<div style="position:relative;left:0px;top:0px;z-index:10;height:0;width:0;"></div>').append( barG ) );
+			    $this.append($('<div class="mindmaptoolbar"></div>').append(barG));
 		    }
 		    
 		    

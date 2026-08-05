@@ -1,58 +1,224 @@
+.il-mindmap-shell {
+	--mindmap-surface: var(--il-main-bg, #fff);
+	--mindmap-surface-muted: var(--il-main-dark-bg, #f5f5f5);
+	--mindmap-border: var(--il-main-border-color, #d3d6d9);
+	--mindmap-text: var(--il-main-text-color, #2b2b2b);
+	--mindmap-muted: var(--il-main-dimmed-text-color, #6b6f73);
+	--mindmap-accent: var(--il-main-color, #4c6586);
+	overflow: hidden;
+	border: 1px solid var(--mindmap-border);
+	border-radius: 4px;
+	background: var(--mindmap-surface);
+	color: var(--mindmap-text);
+}
+
+.il-mindmap-header {
+	position: relative;
+	z-index: 30;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	min-height: 64px;
+	padding: 10px 16px;
+	border-bottom: 1px solid var(--mindmap-border);
+	background: var(--mindmap-surface);
+}
+
+.il-mindmap-heading {
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 1.4;
+}
+
+.il-mindmap-hint {
+	margin-top: 2px;
+	color: var(--mindmap-muted);
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.il-mindmap-save {
+	flex: 0 0 auto;
+}
+
+.il-mindmap-canvas {
+	position: relative;
+	width: 100%;
+	min-height: 520px;
+	overflow: hidden;
+	background-color: var(--mindmap-surface-muted);
+}
+
+.mindmapbackground {
+	background-color: var(--mindmap-surface-muted);
+	background-image:
+		linear-gradient(rgba(76, 101, 134, 0.08) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(76, 101, 134, 0.08) 1px, transparent 1px);
+	background-position: center;
+	background-size: 24px 24px;
+}
+
+.mindmapnode {
+	z-index: 20;
+	position: absolute;
+	display: inline;
+	max-width: 320px;
+	padding: 7px 11px;
+	border: 1px solid var(--mindmap-border);
+	border-radius: 6px;
+	background-color: var(--mindmap-surface);
+	font-family: inherit;
+	line-height: 1.35;
+	text-align: center;
+	transition: outline-color 120ms ease, outline-offset 120ms ease;
+}
+
 .mindmapnode:hover {
 	cursor: pointer;
-}
-.mindmapnode {
-	z-index:20;
-	position:absolute;
-	text-align:center;
-	display:inline;
-	padding:5px;
-	border-radius:5px;
-	border:solid 1px red;
-	background-color:white;
-	font-family: verdana;
+	outline: 2px solid color-mix(in srgb, var(--mindmap-accent) 30%, transparent);
+	outline-offset: 2px;
 }
 
 .rootnode {
-	background-color:gray;
-	color: white;
-	font-weight: bold;
+	border-color: var(--mindmap-accent);
+	background-color: var(--mindmap-accent);
+	color: #fff;
+	font-weight: 600;
 }
+
 .nodeactive {
-	background-color: #ffff00;
-	color: black;
-	
+	outline: 3px solid color-mix(in srgb, var(--mindmap-accent) 55%, transparent);
+	outline-offset: 3px;
 }
-.mindmapbutton {
-	background-color: white;
-	color: black;
-	border: solid 1px gray;
-	border-radius: 5px;
+
+#areabar {
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	height: 46px !important;
+	padding: 7px 12px !important;
+	border-bottom: 1px solid var(--mindmap-border) !important;
+	background: var(--mindmap-surface) !important;
 }
+
+.mindmaptoolbar {
+	position: relative;
+	z-index: 30;
+	height: 46px;
+}
+
+#areabar > div {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 0 !important;
+}
+
+.mindmapbutton,
+.mindmapokbutton {
+	min-height: 30px;
+	padding: 4px 10px;
+	border: 1px solid var(--mindmap-border);
+	border-radius: 3px;
+	background: var(--mindmap-surface);
+	color: var(--mindmap-text);
+	font: inherit;
+	font-size: 13px;
+	line-height: 1.4;
+}
+
+.mindmapbutton:hover:not(:disabled),
+.mindmapokbutton:hover:not(:disabled) {
+	border-color: var(--mindmap-accent);
+	background: var(--mindmap-surface-muted);
+}
+
+.mindmapbutton:disabled {
+	cursor: not-allowed;
+	opacity: 0.55;
+}
+
 .mindmapimgbutton {
-    bordeR: 0;
-    background: 0;
-    padding: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
 }
-.mindmapbackground {
-	background-image: url(paper-background2.png);
+
+#transparentbg {
+	background: rgba(33, 37, 41, 0.42) !important;
+	opacity: 1 !important;
+}
+
+#editObjDiv {
+	box-sizing: border-box;
+	width: min(380px, calc(100vw - 48px)) !important;
+	padding: 16px !important;
+	border: 1px solid var(--mindmap-border) !important;
+	border-radius: 6px !important;
+	background: var(--mindmap-surface) !important;
+	box-shadow: none !important;
+	color: var(--mindmap-text);
 }
 
 .mindmapextrainfo {
-	background-color: white;
-	width: 290px;
-	
+	width: 100%;
+	background-color: transparent;
 }
-.mindmapokbutton {
-	border: solid 1px gray;
+
+.mindmaptextarea,
+#editObjDiv input[type="text"],
+#editObjDiv select,
+#editObjDiv textarea {
+	box-sizing: border-box;
+	max-width: 100%;
+	min-height: 32px;
+	padding: 5px 8px;
+	border: 1px solid var(--mindmap-border);
+	border-radius: 3px;
+	background: var(--mindmap-surface);
+	color: var(--mindmap-text);
+	font: inherit;
+}
+
+.mindmaptextarea:focus,
+#editObjDiv input:focus,
+#editObjDiv select:focus,
+#editObjDiv textarea:focus {
+	border-color: var(--mindmap-accent);
+	outline: 2px solid color-mix(in srgb, var(--mindmap-accent) 25%, transparent);
+	outline-offset: 0;
+}
+
+.mmimg {
+	box-sizing: content-box;
+	padding: 5px;
+	border: 1px solid transparent !important;
 	border-radius: 3px;
 }
+
+.mmimg:hover {
+	background: var(--mindmap-surface-muted);
+}
+
 .simpletip {
-	font-size: 8pt;
+	font-size: 12px;
 }
-.mindmaptextarea {
-	border: solid 1px gray;
-	border-radius: 3px;
-	background-color: white;
+
+@media (max-width: 767px) {
+	.il-mindmap-header {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.il-mindmap-save {
+		width: 100%;
+	}
+
+	#areabar {
+		height: auto !important;
+		min-height: 46px;
+		overflow-x: auto !important;
+	}
 }
 
