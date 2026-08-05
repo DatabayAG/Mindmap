@@ -11,83 +11,70 @@
  */
 class ilMindmapConfigGUI extends ilPluginConfigGUI
 {
-	/**
-	* Handles all commmands, default is "configure"
-	*/
-	function performCommand(string $cmd): void
-	{
+	protected ilGlobalTemplateInterface $tpl;
+	protected ilCtrl $ctrl;
+	protected ilLanguage $lng;
 
-		switch ($cmd)
-		{
+	public function __construct()
+	{
+		global $DIC;
+		$this->tpl = $DIC['tpl'];
+		$this->ctrl = $DIC->ctrl();
+		$this->lng = $DIC->language();
+	}
+
+	/**
+	* Handles all commands, default is "configure"
+	*/
+	public function performCommand(string $cmd): void
+	{
+		switch ($cmd) {
 			case "configure":
 			case "save":
 				$this->$cmd();
 				break;
-
 		}
 	}
 
 	/**
 	 * Configure screen
 	 */
-	function configure()
+	public function configure(): void
 	{
-		global $tpl;
-
 		$form = $this->initConfigurationForm();
-		$tpl->setContent($form->getHTML());
+		$this->tpl->setContent($form->getHTML());
 	}
-
-	//
-	// From here on, this is just an mindmap implementation using
-	// a standard form (without saving anything)
-	//
 
 	/**
 	 * Init configuration form.
-	 *
-	 * @return object form object
 	 */
-	public function initConfigurationForm()
+	public function initConfigurationForm(): ilPropertyFormGUI
 	{
-		global $lng, $ilCtrl;
-
 		$pl = $this->getPluginObject();
 
 		$form = new ilPropertyFormGUI();
-
-
-		$form->addCommandButton("save", $lng->txt("save"));
-
+		$form->addCommandButton("save", $this->lng->txt("save"));
 		$form->setTitle($pl->txt("mindmap_plugin_configuration"));
-		$form->setFormAction($ilCtrl->getFormAction($this));
+		$form->setFormAction($this->ctrl->getFormAction($this));
 
 		return $form;
 	}
 
 	/**
 	 * Save form input (currently does not save anything to db)
-	 *
 	 */
-	public function save()
+	public function save(): void
 	{
-		global $tpl, $lng, $ilCtrl;
-
 		$pl = $this->getPluginObject();
 
 		$form = $this->initConfigurationForm();
-		if ($form->checkInput())
-		{
-
+		if ($form->checkInput()) {
 			// @todo: implement saving to db
-			$tpl->setOnScreenMessage("success", $pl->txt("saving_invoked"), true);
-			$ilCtrl->redirect($this, "configure");
+			$this->tpl->setOnScreenMessage("success", $pl->txt("saving_invoked"), true);
+			$this->ctrl->redirect($this, "configure");
 		}
-		else
-		{
-			$form->setValuesByPost();
-			$tpl->setContent($form->getHtml());
-		}
-	}
 
+		$form->setValuesByPost();
+		$this->tpl->setContent($form->getHtml());
+	}
 }

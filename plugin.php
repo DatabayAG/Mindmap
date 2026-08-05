@@ -4,7 +4,7 @@
 $id = "xmmp";
 
 // code version; must be changed for all code changes
-define('xmmp_version', "1.5.2");
+define('xmmp_version', "1.5.3");
 $version = xmmp_version;
 
 // ilias min and max version; must always reflect the versions that should

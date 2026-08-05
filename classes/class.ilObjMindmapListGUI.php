@@ -12,40 +12,40 @@
 */
 class ilObjMindmapListGUI extends ilObjectPluginListGUI
 {
-	
 	/**
 	* Init type
 	*/
-	function initType()
+	public function initType(): void
 	{
 		$this->setType("xmmp");
 	}
-	
+
 	/**
 	* Get name of gui class handling the commands
 	*/
-	function getGuiClass(): string
+	public function getGuiClass(): string
 	{
 		return "ilObjMindmapGUI";
 	}
-	
+
 	/**
 	* Get commands
 	*/
-	function initCommands(): array
+	public function initCommands(): array
 	{
-		return array
-		(
-			array(
+		return [
+			[
 				"permission" => "read",
 				"cmd" => "showContent",
-				"default" => true),
-			array(
+				"default" => true,
+			],
+			[
 				"permission" => "write",
 				"cmd" => "editProperties",
 				"txt" => $this->txt("edit"),
-				"default" => false),
-		);
+				"default" => false,
+			],
+		];
 	}
 
 	/**
@@ -56,15 +56,8 @@ class ilObjMindmapListGUI extends ilObjectPluginListGUI
 	*						"property" (string) => property name
 	*						"value" (string) => property value
 	*/
-	function getProperties(): array
+	public function getProperties(): array
 	{
-		global $lng, $ilUser;
-
-		$props = array();
-		
-		#$this->plugin->includeClass("class.ilObjMindmapAccess.php");
-
-		return $props;
+		return [];
 	}
 }
-?>

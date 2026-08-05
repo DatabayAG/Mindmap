@@ -11,7 +11,6 @@
 */
 class ilObjMindmapAccess extends ilObjectPluginAccess
 {
-
 	/**
 	* Checks wether a user may invoke a command or not
 	* (this method is called by ilAccessHandler::checkAccess)
@@ -27,20 +26,17 @@ class ilObjMindmapAccess extends ilObjectPluginAccess
 	*
 	* @return	boolean		true, if everything is ok
 	*/
-	function _checkAccess(string $cmd, string $permission, int $ref_id, int $obj_id, ?int $user_id = null): bool
+	public function _checkAccess(string $cmd, string $permission, int $ref_id, int $obj_id, ?int $user_id = null): bool
 	{
-		global $ilUser, $ilAccess;
+		global $DIC;
 
-		if (!isset($user_id) || $user_id == "")
-		{
-			$user_id = $ilUser->getId();
+		if ($user_id === null || $user_id === 0) {
+			$user_id = $DIC->user()->getId();
 		}
 
-		switch ($permission)
-		{
+		switch ($permission) {
 			case "read":
-				if (!$ilAccess->checkAccessOfUser($user_id, "write", "", $ref_id))
-				{
+				if (!$DIC->access()->checkAccessOfUser($user_id, "write", "", $ref_id)) {
 					#return false;
 				}
 				break;
@@ -48,6 +44,4 @@ class ilObjMindmapAccess extends ilObjectPluginAccess
 
 		return true;
 	}
-
-
 }
