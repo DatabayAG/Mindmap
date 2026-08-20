@@ -8,10 +8,14 @@ INSTALLATION INSTRUCTIONS   (ILIAS 10)
 2. Rebuild the Composer classmap from the ILIAS root:
    composer du
 
-3. Access ILIAS Administration → Plugins (or Modules, Services and Plugins).
+3. Register RBAC operations (and update the plugin) via CLI from the ILIAS root:
+   php cli/setup.php update --legacy-plugin Mindmap
 
-4. Find Mindmap (xmmp), run Update, then Activate.
+   This runs the Mindmap Setup Agent, which adds the custom edit_map permission
+   and clones existing write grants onto it.
 
-5. Refresh language files if offered.
+4. Alternatively / additionally: Administration → Plugins → Update / Activate
+   (language refresh if offered). Note: custom RBAC registration is handled by
+   the Setup Agent in step 3, not by sql/dbupdate.php.
 
-6. Create new Mindmap repository objects as usual.
+5. Create new Mindmap repository objects as usual.

@@ -11,7 +11,9 @@ obj_xmmp_select#:#Mindmap auswählen
 xmmp_add#:#Mindmap hinzufügen
 xmmp_new#:#Mindmap neu anlegen
 xmmp_read#:#Lesezugriff Mindmap
-xmmp_write#:#Mindmap bearbeiten
+xmmp_write#:#Mindmap-Einstellungen ändern
+xmmp_edit_map#:#Mindmap-Inhalt bearbeiten
+edit_map#:#Mindmap bearbeiten
 xmmp_delete#:#Mindmap löschen
 xmmp_visible#:#Mindmap ist sichtbar
 xmmp_edit_permission#:#Rechte ändern

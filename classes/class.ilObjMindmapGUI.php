@@ -57,7 +57,7 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 
 			case "showEdit":
 			case "saveMindmap":
-				$this->checkPermission("write");
+				$this->checkEditMapPermission();
 				$this->$cmd();
 				break;
 		}
@@ -121,7 +121,7 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 			);
 		}
 
-		if ($this->access->checkAccess("write", "", $this->object->getRefId())) {
+		if ($this->canEditMap()) {
 			$this->tabs->addTab(
 				"edit",
 				$this->txt("editmap"),
@@ -297,6 +297,20 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 			$decoded,
 			JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE
 		);
+	}
+
+	private function canEditMap(): bool
+	{
+		$ref_id = $this->object->getRefId();
+		return $this->access->checkAccess("edit_map", "", $ref_id)
+			|| $this->access->checkAccess("write", "", $ref_id);
+	}
+
+	private function checkEditMapPermission(): void
+	{
+		if (!$this->canEditMap()) {
+			$this->checkPermission("edit_map");
+		}
 	}
 
 	private function translate(string $html): string
