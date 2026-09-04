@@ -23,7 +23,7 @@ fold_create_xmmp#:#Erstelle Mindmap
 root_create_xmmp#:#Erstelle Mindmap
 cat_create_xmmp#:#Erstelle Mindmap
 content#:#Inhalt
-editmap#:#Bearbeiten
+editmap#:#Mindmap bearbeiten
 mindmap#:#Mindmap
 mindmap_navigation_hint#:#Ziehen Sie die Fläche, um zu navigieren. Mit dem Mausrad oder den +/- Schaltflächen zoomen Sie.
 mindmap_editing_hint#:#Ziehen Sie die Fläche, um zu navigieren. Mit dem Mausrad oder den +/- Schaltflächen zoomen Sie. Wählen Sie einen Knoten zum Bearbeiten aus.

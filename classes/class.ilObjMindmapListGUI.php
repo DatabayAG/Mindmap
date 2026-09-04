@@ -42,19 +42,19 @@ class ilObjMindmapListGUI extends ilObjectPluginListGUI
 			[
 				"permission" => "edit_map",
 				"cmd" => "showEdit",
-				"txt" => $this->txt("editmap"),
+				"txt" => $this->txt("edit_map"),
 				"default" => false,
 			],
 			[
 				"permission" => "write",
 				"cmd" => "showEdit",
-				"txt" => $this->txt("editmap"),
+				"txt" => $this->txt("edit_map"),
 				"default" => false,
 			],
 			[
 				"permission" => "write",
 				"cmd" => "editProperties",
-				"txt" => $this->txt("edit"),
+				"txt" => $this->txt("edit_properties"),
 				"default" => false,
 			],
 		];

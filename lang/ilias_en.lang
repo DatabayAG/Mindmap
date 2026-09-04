@@ -23,7 +23,7 @@ fold_create_xmmp#:#Create Mindmap
 root_create_xmmp#:#Create Mindmap
 cat_create_xmmp#:#Create Mindmap
 content#:#Content
-editmap#:#Edit
+editmap#:#Edit Map
 mindmap#:#Mindmap
 mindmap_navigation_hint#:#Drag the canvas to navigate. Use the mouse wheel or +/- buttons to zoom.
 mindmap_editing_hint#:#Drag the canvas to navigate. Use the mouse wheel or +/- buttons to zoom. Select a node to edit the map.
