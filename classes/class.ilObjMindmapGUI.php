@@ -16,7 +16,7 @@
 *   screens) and ilInfoScreenGUI (handles the info screen).
 *
 * @ilCtrl_isCalledBy ilObjMindmapGUI: ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
-* @ilCtrl_Calls ilObjMindmapGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI
+* @ilCtrl_Calls ilObjMindmapGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilFormPropertyDispatchGUI
 *
 */
 class ilObjMindmapGUI extends ilObjectPluginGUI
@@ -36,6 +36,33 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 	final public function getType(): string
 	{
 		return "xmmp";
+	}
+
+	public function executeCommand(): void
+	{
+		$next_class = $this->ctrl->getNextClass($this);
+		if (strtolower($next_class) === 'ilformpropertydispatchgui') {
+			$this->checkEditMapPermission();
+			$dispatch = new ilFormPropertyDispatchGUI();
+			$dispatch->setItem($this->createInternalLinkSelector());
+			$this->ctrl->forwardCommand($dispatch);
+			return;
+		}
+
+		parent::executeCommand();
+	}
+
+	protected function createInternalLinkSelector(): ilRepositorySelector2InputGUI
+	{
+		$selector = new ilRepositorySelector2InputGUI(
+			$this->txt('interner_Link'),
+			'mm_int_ref',
+			false,
+			$this
+		);
+		$selector->setValue((string) $this->object->getRefId());
+
+		return $selector;
 	}
 
 	/**
@@ -251,6 +278,13 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 		$html = str_replace(
 			"#FORMACTION#",
 			htmlspecialchars($this->ctrl->getFormAction($this, "saveMindmap"), ENT_QUOTES, 'UTF-8'),
+			$html
+		);
+		$html = str_replace(
+			"#REPO_SELECTOR#",
+			'<div id="il-mindmap-repo-selector" class="il-hidden-repo-selector">'
+			. $this->createInternalLinkSelector()->render()
+			. '</div>',
 			$html
 		);
 

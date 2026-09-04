@@ -285,6 +285,36 @@
 	resize: vertical;
 }
 
+#il-mindmap-repo-selector {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+#il-mindmap-repo-selector #mm_int_ref_cont_txt,
+#il-mindmap-repo-selector #mm_int_ref_select,
+#il-mindmap-repo-selector #mm_int_ref_reset {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.mindmap-link-picker {
+	margin-top: 4px;
+}
+
 @media (max-width: 767px) {
 	.il-mindmap-header {
 		align-items: flex-start;

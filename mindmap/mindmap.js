@@ -413,6 +413,59 @@
         $tooltip.css({ left: left, top: top });
     };
 
+    var mmRepoLinkNodeId = null;
+    var mmRepoPickerInited = false;
+
+    var initRepositoryLinkPicker = function() {
+        if (mmRepoPickerInited) {
+            return;
+        }
+        if (!document.getElementById('mm_int_ref_hid')) {
+            return;
+        }
+        mmRepoPickerInited = true;
+
+        document.addEventListener('click', function(e) {
+            var target = e.target;
+            if (!target || !target.closest) {
+                return;
+            }
+            if (!target.closest('#mm_int_ref_expl_content a.ilExplSelectInputButS')) {
+                return;
+            }
+            setTimeout(function() {
+                if (!mmRepoLinkNodeId) {
+                    return;
+                }
+                var input = document.querySelector('#mm_int_ref_hid input[name="mm_int_ref"]');
+                if (!input || !input.value) {
+                    return;
+                }
+                var field = document.getElementById('linktargetvalue_' + mmRepoLinkNodeId);
+                if (field) {
+                    field.value = input.value;
+                }
+            }, 50);
+        }, true);
+    };
+
+    var openRepositoryLinkPicker = function(nodeId) {
+        mmRepoLinkNodeId = nodeId;
+        var sel = document.getElementById('mm_int_ref_select');
+        if (sel) {
+            sel.click();
+        }
+    };
+
+    var updateLinkTargetUi = function(nodeId) {
+        var typeEl = document.getElementById('linktypevalue_' + nodeId);
+        var pickerRow = document.getElementById('linkpickerrow_' + nodeId);
+        if (!typeEl || !pickerRow) {
+            return;
+        }
+        pickerRow.style.display = typeEl.value === 'intern' ? '' : 'none';
+    };
+
     var bindNodeTooltips = function() {
         $('.mindmapnode').has('.simpletip').off('.mindmaptooltip').on('mouseenter.mindmaptooltip', function() {
             if (tooltipHideTimer) {
@@ -1006,12 +1059,15 @@
                 info += "<select id='linktypevalue_"+myid+"'>";
                 info += "<option value=''>"+MMLang.kein_Link+"</option>";
                 info += "<option value='extern' "+(this.nodes[myid].linktype=='extern' ? 'selected' : '')+">"+MMLang.externer_Link+"</option>";
-                info += "<option value='intern' "+(this.nodes[myid].linktype=='intern' ? 'selected' : '')+">"+MMLang.interner_Link+" (RefID)</option>";
+                info += "<option value='intern' "+(this.nodes[myid].linktype=='intern' ? 'selected' : '')+">"+MMLang.interner_Link+"</option>";
                 info += "</select>";
                 info += "<br/><br/>";
                 info += '<div style="font-size:8pt;color: #555555;">URL '+MMLang.oder+' RefID</div>';
                 if(typeof(this.nodes[myid].linktarget)=="undefined") this.nodes[myid].linktarget = "";
                 info += "<input type='text' size=30 value='"+this.nodes[myid].linktarget+"' id='linktargetvalue_"+myid+"' /><br/>";
+                info += "<div id='linkpickerrow_"+myid+"' style='"+(this.nodes[myid].linktype=='intern' ? '' : 'display:none;')+"margin-top:6px;'>";
+                info += "<button type='button' class='mindmapbutton mindmap-link-picker' id='linkpickerbtn_"+myid+"'>"+MMLang.select_repository_object+"</button>";
+                info += "</div>";
                 info += "</div>";
                 
                 
@@ -1020,6 +1076,14 @@
 					.append(info)
 					/*.append("Farbe:&nbsp;<input type='text' size=10 name='color' class='colorpicker mindmaptextarea' /> ")*/
 					);
+		$('#linkpickerbtn_'+myid).on('click', function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			openRepositoryLinkPicker(myid);
+		});
+		$('#linktypevalue_'+myid).on('change', function() {
+			updateLinkTargetUi(myid);
+		});
 		$('#edit_'+myid).select();
 		
 		editObj.append( '<div style="clear:both;height:1px;border-bottom: dotted 1px gray;margin: 6px 0 6px 0;"></div>');
@@ -1274,6 +1338,7 @@
 
 
                     if(settings.edit==true) {
+			    initRepositoryLinkPicker();
 			    barL.append(addButton);
 			    barL.append(editButton);
 			    barL.append(delButton);
