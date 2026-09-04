@@ -16,6 +16,14 @@
         return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom));
     };
 
+    var cssWorldPos = function(obj) {
+        var el = obj.jquery ? obj : $(obj);
+        return {
+            left: parseFloat(el.css('left')) || 0,
+            top: parseFloat(el.css('top')) || 0
+        };
+    };
+
     var updateZoomControls = function(mindmap) {
         if (!mindmap.zoomControls) {
             return;
@@ -285,7 +293,7 @@
     };
 
     var highlightNode = function( obj) {
-        var p = obj.position();
+        var p = cssWorldPos(obj);
         $('.highlighbox').remove();
         
         var div = '<div class="highlighbox" ';
@@ -299,7 +307,7 @@
 	    if(mindmap.disableRebuild>0) return;
 	
 	    mindmap.objactive = "node";
-	    mindmap.nodemove = $(this).position();
+	    mindmap.nodemove = cssWorldPos($(this));
 	    mindmap.activeObj = $(this);
 	    
 	    
@@ -343,7 +351,7 @@
 		mindmap.objactive = "";
 		$(document).unbind('.nodedragging');
 		id = mindmap.activeObj.attr('id');
-		var xy = mindmap.activeObj.position();
+		var xy = cssWorldPos(mindmap.activeObj);
 	
 		var dx = (xy.left-5000) - mindmap.nodes[id].x;
 		var dy = (xy.top-5000) - mindmap.nodes[id].y;
@@ -800,7 +808,7 @@
 		orig = this.nodes[myid].title;
 		
                 
-                var pp = $(this.activeObj).position();
+                var pp = cssWorldPos(this.activeObj);
                 
                 $(this.area).append("<div id='transparentbg' style='position:absolute;z-index:999;left:0;top:0;width:10000px;height:10000px;background-color:silver;opacity: 0.7;'>&nbsp;</div>");
                 
