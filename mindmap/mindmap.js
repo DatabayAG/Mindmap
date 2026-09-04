@@ -2,10 +2,98 @@
 
 
     var counter = 0;
+    var MIN_ZOOM = 0.5;
+    var MAX_ZOOM = 2.0;
+    var ZOOM_STEP = 1.15;
+
     var getUniqId = function() {
         counter++;
         var d = new Date();
         return "n_"+counter+"_"+d.getTime();
+    };
+
+    var clampZoom = function(zoom) {
+        return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom));
+    };
+
+    var updateZoomControls = function(mindmap) {
+        if (!mindmap.zoomControls) {
+            return;
+        }
+
+        var zoom = mindmap.zoom || 1;
+        mindmap.zoomControls.label.text(Math.round(zoom * 100) + '%');
+        mindmap.zoomControls.zoomIn.prop('disabled', zoom >= MAX_ZOOM - 0.001);
+        mindmap.zoomControls.zoomOut.prop('disabled', zoom <= MIN_ZOOM + 0.001);
+    };
+
+    var applyZoom = function(mindmap, newZoom, originX, originY) {
+        var oldZoom = mindmap.zoom || 1;
+        newZoom = clampZoom(newZoom);
+
+        if (Math.abs(newZoom - oldZoom) < 0.0001) {
+            updateZoomControls(mindmap);
+            return;
+        }
+
+        var worldX = (originX - mindmap.left) / oldZoom;
+        var worldY = (originY - mindmap.top) / oldZoom;
+
+        mindmap.zoom = newZoom;
+        mindmap.left = originX - worldX * newZoom;
+        mindmap.top = originY - worldY * newZoom;
+
+        mindmap.area.css({
+            left: mindmap.left,
+            top: mindmap.top,
+            transform: 'scale(' + newZoom + ')',
+            'transform-origin': '0 0'
+        });
+
+        updateZoomControls(mindmap);
+    };
+
+    var createZoomControls = function(mindmap, $viewport) {
+        var wrap = $('<div class="il-mindmap-zoom" role="group"></div>');
+        var zoomIn = $('<button type="button" class="il-mindmap-zoom-btn il-mindmap-zoom-in">+</button>')
+            .attr('aria-label', MMLang.zoom_in);
+        var zoomOut = $('<button type="button" class="il-mindmap-zoom-btn il-mindmap-zoom-out">&minus;</button>')
+            .attr('aria-label', MMLang.zoom_out);
+        var label = $('<span class="il-mindmap-zoom-level" aria-live="polite"></span>');
+
+        zoomIn.on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            applyZoom(
+                mindmap,
+                (mindmap.zoom || 1) * ZOOM_STEP,
+                $viewport.width() / 2,
+                $viewport.height() / 2
+            );
+        });
+
+        zoomOut.on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            applyZoom(
+                mindmap,
+                (mindmap.zoom || 1) / ZOOM_STEP,
+                $viewport.width() / 2,
+                $viewport.height() / 2
+            );
+        });
+
+        wrap.append(zoomIn).append(label).append(zoomOut);
+        $viewport.append(wrap);
+
+        mindmap.zoomControls = {
+            wrap: wrap,
+            zoomIn: zoomIn,
+            zoomOut: zoomOut,
+            label: label
+        };
+
+        updateZoomControls(mindmap);
     };
 
     var activateNode = function(id) {
@@ -185,14 +273,15 @@
     };
 
     var centerMindmap = function(id) {
-    	    this.left = -(5000+this.nodes[id].x-this.width/2)-100;
-	    this.top = -(5000+this.nodes[id].y-this.height/4);
-	    
-	    
-	    this.area.animate( {
-			    'left': this.left,
-			    'top': this.top
-	    } );
+        var zoom = this.zoom || 1;
+
+        this.left = this.width / 2 - (5000 + this.nodes[id].x) * zoom - 100;
+        this.top = this.height / 4 - (5000 + this.nodes[id].y) * zoom;
+
+        this.area.animate({
+            left: this.left,
+            top: this.top
+        });
     };
 
     var highlightNode = function( obj) {
@@ -240,9 +329,10 @@
 		    positionProvider = e.originalEvent;
 		}
 	
-		var dx = positionProvider.clientX-mindmap.nodestartpos.left;
-		var dy = positionProvider.clientY-mindmap.nodestartpos.top;
-		mindmap.activeObj.css('left', mindmap.nodemove.left*1+dx*1).css('top', mindmap.nodemove.top*1+dy*1);
+		var zoom = mindmap.zoom || 1;
+		var dx = (positionProvider.clientX - mindmap.nodestartpos.left) / zoom;
+		var dy = (positionProvider.clientY - mindmap.nodestartpos.top) / zoom;
+		mindmap.activeObj.css('left', mindmap.nodemove.left * 1 + dx * 1).css('top', mindmap.nodemove.top * 1 + dy * 1);
 		
                 $('.highlighbox').remove();
 		
@@ -976,23 +1066,26 @@
                     mindmap.nodes = settings.tree.nodes;
                     mindmap.path = settings.path;
                     mindmap.editable = settings.edit;
-                    
+                    mindmap.zoom = clampZoom(settings.zoom || 1);
+                    mindmap.minZoom = MIN_ZOOM;
+                    mindmap.maxZoom = MAX_ZOOM;
 
                     $this.css('overflow', 'hidden');
 
                     var onMouseMove = function(e, t){
-                        mindmap.area.css('left', mindmap.left+(dragData.current.x-dragData.start.x)).css('top', mindmap.top+(dragData.current.y-dragData.start.y));
+                        mindmap.area.css('left', mindmap.left + (dragData.current.x - dragData.start.x)).css('top', mindmap.top + (dragData.current.y - dragData.start.y));
                     };
-                    mindmap.left = -(5000-mindmap.width/2);
-                    mindmap.top = -(5000-mindmap.height/2);
-                    
+                    mindmap.left = mindmap.width / 2 - 5000 * mindmap.zoom;
+                    mindmap.top = mindmap.height / 2 - 5000 * mindmap.zoom;
+
                     mindmap.area = $('<div class="mindmapbackground"></div>').css('position', 'relative')
                                                    .css('z-index', 1)
                                                    .css('left', mindmap.left)
                                                    .css('top', mindmap.top)
                                                    .css('width', 10000)
                                                    .css('height', 10000)
-                                                   
+                                                   .css('transform', 'scale(' + mindmap.zoom + ')')
+                                                   .css('transform-origin', '0 0')
                                                    .css('background-position', 'center');
                                                    
                     mindmap.area.bind('mousedown touchstart', function(e) {
@@ -1141,7 +1234,18 @@
 		    
 		    
                     $this.append(mindmap.area);
-                    
+                    createZoomControls(mindmap, $this);
+
+                    $this.on('wheel.mindmapzoom', function(e) {
+                        e.preventDefault();
+                        var oe = e.originalEvent;
+                        var rect = $this[0].getBoundingClientRect();
+                        var originX = oe.clientX - rect.left;
+                        var originY = oe.clientY - rect.top;
+                        var factor = oe.deltaY < 0 ? ZOOM_STEP : (1 / ZOOM_STEP);
+
+                        applyZoom(mindmap, (mindmap.zoom || 1) * factor, originX, originY);
+                    });
 
                     $this.bind("resize", function() {
                         $('#areabar').css("width", $(this).width());
@@ -1186,6 +1290,7 @@
 
                 
                 $(document).unbind('.mindmap');
+                $this.off('.mindmapzoom');
                 /*data.mindmap.remove();
                 $this.removeData('mindmap');*/
 
