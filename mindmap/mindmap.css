@@ -262,6 +262,29 @@
 	font-size: 12px;
 }
 
+.il-mindmap-tooltip {
+	position: absolute;
+	z-index: 10000;
+	max-width: 280px;
+	max-height: min(240px, 40vh);
+	overflow-y: auto;
+	overflow-wrap: break-word;
+	padding: 8px 10px;
+	border: 1px solid var(--il-main-border-color, #d3d6d9);
+	border-radius: 5px;
+	background: var(--il-main-bg, #fff);
+	color: var(--il-main-text-color, #2b2b2b);
+	font-size: 0.85em;
+	line-height: 1.4;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+#editnodedesc textarea.mindmaptextarea {
+	max-height: min(200px, 35vh);
+	overflow-y: auto;
+	resize: vertical;
+}
+
 @media (max-width: 767px) {
 	.il-mindmap-header {
 		align-items: flex-start;

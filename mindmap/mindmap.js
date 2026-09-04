@@ -368,6 +368,98 @@
 	    });
 	};    
     
+    var tooltipHideTimer = null;
+
+    var removeNodeTooltips = function() {
+        if (tooltipHideTimer) {
+            clearTimeout(tooltipHideTimer);
+            tooltipHideTimer = null;
+        }
+        $('.tooltips').remove();
+    };
+
+    var positionNodeTooltip = function($tooltip, $node) {
+        var gap = 8;
+        var scrollLeft = $(window).scrollLeft();
+        var scrollTop = $(window).scrollTop();
+        var viewportWidth = $(window).width();
+        var viewportHeight = $(window).height();
+        var tw = $tooltip.outerWidth();
+        var th = $tooltip.outerHeight();
+
+        var rect = $node[0].getBoundingClientRect();
+        var nodeLeft = rect.left + scrollLeft;
+        var nodeTop = rect.top + scrollTop;
+        var rightSide = nodeLeft + rect.width + gap;
+        var leftSide = nodeLeft - tw - gap;
+        var left;
+        var top = nodeTop;
+
+        if (rightSide + tw + gap <= scrollLeft + viewportWidth) {
+            left = rightSide;
+        } else if (leftSide >= scrollLeft + gap) {
+            left = leftSide;
+        } else {
+            left = nodeLeft;
+            top = nodeTop + rect.height + gap;
+            if (top + th + gap > scrollTop + viewportHeight && nodeTop - th - gap >= scrollTop + gap) {
+                top = nodeTop - th - gap;
+            }
+        }
+
+        left = Math.max(Math.min(left, scrollLeft + viewportWidth - tw - gap), scrollLeft + gap);
+        top = Math.max(Math.min(top, scrollTop + viewportHeight - th - gap), scrollTop + gap);
+
+        $tooltip.css({ left: left, top: top });
+    };
+
+    var bindNodeTooltips = function() {
+        $('.mindmapnode').has('.simpletip').off('.mindmaptooltip').on('mouseenter.mindmaptooltip', function() {
+            if (tooltipHideTimer) {
+                clearTimeout(tooltipHideTimer);
+                tooltipHideTimer = null;
+            }
+            removeNodeTooltips();
+
+            var $node = $(this);
+            var txt = $node.find('.simpletip div').html();
+            if (!txt) {
+                return;
+            }
+
+            var $tooltip = $('<div></div>')
+                .attr('id', 'tooltip' + (new Date()).getTime())
+                .addClass('tooltips il-mindmap-tooltip')
+                .html(txt);
+
+            $('body').append($tooltip);
+            positionNodeTooltip($tooltip, $node);
+
+            var scheduleHide = function() {
+                if (tooltipHideTimer) {
+                    clearTimeout(tooltipHideTimer);
+                }
+                tooltipHideTimer = setTimeout(function() {
+                    removeNodeTooltips();
+                }, 150);
+            };
+
+            var cancelHide = function() {
+                if (tooltipHideTimer) {
+                    clearTimeout(tooltipHideTimer);
+                    tooltipHideTimer = null;
+                }
+            };
+
+            $node.off('mouseleave.mindmaptooltip').on('mouseleave.mindmaptooltip', scheduleHide);
+            $tooltip.on('mouseenter', cancelHide);
+            $tooltip.on('mouseleave', scheduleHide);
+            $tooltip.on('wheel', function(e) {
+                e.stopPropagation();
+            });
+        });
+    };
+
     var rebuildTree = function(mindmap) {
 
 	rebuildJSON.call(mindmap);
@@ -379,6 +471,7 @@
 	    idActive = mindmap.activeObj.attr('id');
 	}
 
+	removeNodeTooltips();
 	$('.mindmapnode').remove();
 
 
@@ -475,55 +568,8 @@
 
 	}
 	
-    /*    
-	$('.simpletip').each( function() {
-			var c = $(this).find('div').html();
-			c = "<div style='position:relative;width:0;height:0;'><div style='background-color:white;border: solid 1px gray; padding:3px;font-size: 7pt;width: 100px;'>"+c+"</div></div>";
-			$(this).simpletip({'content': c});
-	});
-	*/
-	$('.simpletip').each(function() {
-			var $this = this;
-			$(this).closest(".mindmapnode").on("mouseover", function(e) {
-					//console.log(e.pageX);
-					var pos = $($this).offset();
-					//console.log(pos);
-					/*
-					$($this).find("div").css("position", "absolute")
-									    .css("display", "block")
-									    .css("left", e.pageX)
-									    .css("top", e.pageY)
-									    .css("width", 100)
-									    .css("z-index", 10000);
-					*/		
-					$('.tooltips').remove();
-					var X = pos.left+10;
-					var Y = pos.top+10;
-					var txt = $($this).find("div").html();
-					var id = 'tooltip'+(new Date()).getTime();
-					var html = "<div id='"+id+"' class='tooltips' style='";
-					html += "position: absolute;";
-					html += "display:block;";
-					html += "max-width: 150px;";
-					html += "left:"+X+"px;";
-					html += "top:"+Y+"px;";
-					html += "z-index:10000;";
-					html += "padding: 5px 10px;";
-					html += "background-color: white;";
-					html += "border-radius: 5px;";
-					html += "font-size: 0.8em;";
-					html += "border: 1px solid gray;";
-					html += "'>"+txt+"</div>";
-					$("body").append(html);
-					
-					$(this).on("mouseout", function(e) {
-							$('#'+id).remove();
-							$('.tooltips').remove();
-					});
-							
-			});
-	});
-	
+	bindNodeTooltips();
+
 
 	redrawLines.call(mindmap);
 
