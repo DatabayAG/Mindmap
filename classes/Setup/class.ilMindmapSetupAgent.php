@@ -45,7 +45,8 @@ class ilMindmapSetupAgent extends ilPluginDefaultAgent
 	protected function getRbacObjectives(): array
 	{
 		return [
-			new ilAccessCustomRBACOperationAddedObjective( 
+			new ilAccessRbacStandardOperationsAddedObjective('xmmp'),
+			new ilAccessCustomRBACOperationAddedObjective(
 				'edit_map',
 				'Edit Map',
 				'object',
@@ -56,6 +57,11 @@ class ilMindmapSetupAgent extends ilPluginDefaultAgent
 				'xmmp',
 				'write',
 				'edit_map'
+			),
+			new ilMindmapAccessRBACOperationClonedObjective(
+				'xmmp',
+				'write',
+				'copy'
 			),
 		];
 	}

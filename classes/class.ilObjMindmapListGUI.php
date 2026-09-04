@@ -20,6 +20,12 @@ class ilObjMindmapListGUI extends ilObjectPluginListGUI
 		$this->setType("xmmp");
 	}
 
+	protected function initListActions(): void
+	{
+		parent::initListActions();
+		$this->copy_enabled = true;
+	}
+
 	/**
 	* Get name of gui class handling the commands
 	*/

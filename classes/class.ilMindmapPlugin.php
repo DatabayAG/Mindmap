@@ -17,4 +17,9 @@ class ilMindmapPlugin extends ilRepositoryObjectPlugin
 	{
 		return "Mindmap";
 	}
+
+	public function allowCopy(): bool
+	{
+		return true;
+	}
 }
