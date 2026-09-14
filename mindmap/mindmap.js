@@ -466,6 +466,80 @@
         pickerRow.style.display = typeEl.value === 'intern' ? '' : 'none';
     };
 
+    var toHexColor = function(value, fallback) {
+        var raw = (value == null ? '' : String(value)).trim();
+        if (raw.charAt(0) === '#') {
+            raw = raw.substr(1);
+        }
+        raw = raw.toLowerCase();
+        if (/^[0-9a-f]{3}$/.test(raw)) {
+            raw = raw.charAt(0) + raw.charAt(0) + raw.charAt(1) + raw.charAt(1) + raw.charAt(2) + raw.charAt(2);
+        }
+        if (/^[0-9a-f]{6}$/.test(raw)) {
+            return '#' + raw;
+        }
+        return fallback;
+    };
+
+    var COLOR_PRESETS = [
+        '#000000', '#767676', '#FFFFFF',
+        '#0072B2', '#56B4E9', '#009E73',
+        '#E69F00', '#F0E442', '#D55E00', '#CC79A7'
+    ];
+
+    var buildColorPresets = function(hexId, pickerId) {
+        var html = "<div class='mindmap-color-presets' data-hex='"+hexId+"' data-picker='"+pickerId+"' role='group'>";
+        for (var i = 0; i < COLOR_PRESETS.length; i++) {
+            html += "<button type='button' class='mindmap-color-preset' data-color='"+COLOR_PRESETS[i]+"'"
+                + " style='background-color:"+COLOR_PRESETS[i]+";'"
+                + " title='"+COLOR_PRESETS[i]+"' aria-label='"+COLOR_PRESETS[i]+"'></button>";
+        }
+        html += "</div>";
+        return html;
+    };
+
+    var bindHexColorPicker = function(hexId, pickerId) {
+        var hexEl = document.getElementById(hexId);
+        var pickerEl = document.getElementById(pickerId);
+        if (!hexEl || !pickerEl) {
+            return;
+        }
+        var fallback = pickerEl.value || '#000000';
+        pickerEl.addEventListener('input', function() {
+            hexEl.value = pickerEl.value;
+        });
+        pickerEl.addEventListener('change', function() {
+            hexEl.value = pickerEl.value;
+        });
+        var syncPicker = function() {
+            var hex = toHexColor(hexEl.value, '');
+            if (hex) {
+                pickerEl.value = hex;
+            }
+        };
+        hexEl.addEventListener('keyup', syncPicker);
+        hexEl.addEventListener('change', syncPicker);
+        pickerEl.value = toHexColor(hexEl.value, fallback);
+
+        var presets = document.querySelector('.mindmap-color-presets[data-hex="' + hexId + '"]');
+        if (presets) {
+            presets.addEventListener('click', function(e) {
+                var btn = e.target.closest ? e.target.closest('.mindmap-color-preset') : null;
+                if (!btn) {
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                var color = toHexColor(btn.getAttribute('data-color'), '');
+                if (!color) {
+                    return;
+                }
+                hexEl.value = color;
+                pickerEl.value = color;
+            });
+        }
+    };
+
     var bindNodeTooltips = function() {
         $('.mindmapnode').has('.simpletip').off('.mindmaptooltip').on('mouseenter.mindmaptooltip', function() {
             if (tooltipHideTimer) {
@@ -964,17 +1038,11 @@
                 
 		var ta = this.nodes[myid].infotext+"";
 		if(ta=="undefined") ta = "";
-                
-		
-		var FARBEN  = ["#000000", "#ff0000", "#008000", "#0000ff", "#ffff00"];
-		var FARBWAHL = "<br/>";
-		FARBWAHL += "<table><tr>";
-		for(var i=0;i<FARBEN.length;i++) {
-			FARBWAHL += "<td style='width:15px;height:15px;background-color:"+FARBEN[i]+";cursor:pointer;' onclick=\"$(this).closest('.propbox').find('.farbvalue').val('"+FARBEN[i]+"');\">&nbsp;</td>";
-			FARBWAHL += "<td width=3></td>";
-		}
-		FARBWAHL += "</tr></table>";
-		
+
+		var fgHex = toHexColor(this.nodes[myid].fgcolor, '#000000');
+		var bgHex = toHexColor(this.nodes[myid].bgcolor, '#ffffff');
+		var borderHex = toHexColor(this.nodes[myid].bordercolor, '#999999');
+
                 var info = "";
                 
                 
@@ -1003,10 +1071,11 @@
                 
                 info += '<table cellspacing=0 cellpadding=0 class="propbox"><tr><td valign=top>';
                 info += '<div style="font-size:8pt;color: #555555;">'+MMLang.Schriftfarbe+'</div>';
-                info += "<input type='text' size=10 value='"+this.nodes[myid].fgcolor+"' id='fgcolorvalue_"+myid+"' class='farbvalue' /><br/>";
-                info += '</td><td width=20></td><td valign=top>';
-                
-                info += FARBWAHL;
+                info += "<div class='mindmap-color-row'>";
+                info += "<input type='text' size=10 value='"+this.nodes[myid].fgcolor+"' id='fgcolorvalue_"+myid+"' class='farbvalue' />";
+                info += "<input type='color' class='c-field-color-picker' id='fgcolorpicker_"+myid+"' value='"+fgHex+"' aria-label='"+MMLang.Schriftfarbe+"' />";
+                info += "</div>";
+                info += buildColorPresets('fgcolorvalue_'+myid, 'fgcolorpicker_'+myid);
                 info += '</td></tr>';
                 info += '<tr>';
                 info += '<td valign=top><br/>';
@@ -1019,10 +1088,11 @@
                 info += "<div id='editnodebg' class='editnodeall' style='display:none;'>";
                 info += '<table cellspacing=0 cellpadding=0 class="propbox"><tr><td valign=top>';
                 info += '<div style="font-size:8pt;color: #555555;">'+MMLang.Hintergrundfarbe+'</div>';
-                info += "<input type='text' size=10 value='"+this.nodes[myid].bgcolor+"' id='bgcolorvalue_"+myid+"' class='farbvalue' /><br/>";
-                info += '</td><td width=20></td><td valign=top>';
-                
-                info += FARBWAHL;
+                info += "<div class='mindmap-color-row'>";
+                info += "<input type='text' size=10 value='"+this.nodes[myid].bgcolor+"' id='bgcolorvalue_"+myid+"' class='farbvalue' />";
+                info += "<input type='color' class='c-field-color-picker' id='bgcolorpicker_"+myid+"' value='"+bgHex+"' aria-label='"+MMLang.Hintergrundfarbe+"' />";
+                info += "</div>";
+                info += buildColorPresets('bgcolorvalue_'+myid, 'bgcolorpicker_'+myid);
                 info += '</td></tr></table>';
                 info += "</div>";
                 
@@ -1030,10 +1100,11 @@
                 info += "<div id='editnodeborder' class='editnodeall' style='display:none;'>";
                 info += '<table cellspacing=0 cellpadding=0 class="propbox"><tr><td valign=top>';
                 info += '<div style="font-size:8pt;color: #555555;">'+MMLang.Rahmenfarbe+'</div>';
-                info += "<input type='text' size=10 value='"+this.nodes[myid].bordercolor+"' id='bordercolorvalue_"+myid+"' class='farbvalue' /><br/>";
-                info += '</td><td width=20></td><td valign=top>';
-                
-                info += FARBWAHL;
+                info += "<div class='mindmap-color-row'>";
+                info += "<input type='text' size=10 value='"+this.nodes[myid].bordercolor+"' id='bordercolorvalue_"+myid+"' class='farbvalue' />";
+                info += "<input type='color' class='c-field-color-picker' id='bordercolorpicker_"+myid+"' value='"+borderHex+"' aria-label='"+MMLang.Rahmenfarbe+"' />";
+                info += "</div>";
+                info += buildColorPresets('bordercolorvalue_'+myid, 'bordercolorpicker_'+myid);
                 info += '</td></tr>';
                 
                 info += '<tr>';
@@ -1084,6 +1155,9 @@
 		$('#linktypevalue_'+myid).on('change', function() {
 			updateLinkTargetUi(myid);
 		});
+		bindHexColorPicker('fgcolorvalue_'+myid, 'fgcolorpicker_'+myid);
+		bindHexColorPicker('bgcolorvalue_'+myid, 'bgcolorpicker_'+myid);
+		bindHexColorPicker('bordercolorvalue_'+myid, 'bordercolorpicker_'+myid);
 		$('#edit_'+myid).select();
 		
 		editObj.append( '<div style="clear:both;height:1px;border-bottom: dotted 1px gray;margin: 6px 0 6px 0;"></div>');

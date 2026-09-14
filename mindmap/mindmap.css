@@ -315,6 +315,50 @@
 	margin-top: 4px;
 }
 
+.mindmap-color-row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.mindmap-color-row input.farbvalue {
+	margin: 0;
+}
+
+#editObjDiv input.c-field-color-picker {
+	flex: 0 0 auto;
+	width: 34px;
+	height: 26px;
+	padding: 0;
+	border: 1px solid var(--mindmap-border, #d3d6d9);
+	border-radius: 3px;
+	background: transparent;
+	cursor: pointer;
+}
+
+.mindmap-color-presets {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-top: 6px;
+	max-width: 150px;
+}
+
+.mindmap-color-preset {
+	width: 18px;
+	height: 18px;
+	padding: 0;
+	border: 1px solid var(--mindmap-border, #d3d6d9);
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.mindmap-color-preset:hover,
+.mindmap-color-preset:focus-visible {
+	outline: 2px solid var(--mindmap-accent, #4c6586);
+	outline-offset: 1px;
+}
+
 @media (max-width: 767px) {
 	.il-mindmap-header {
 		align-items: flex-start;
