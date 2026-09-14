@@ -184,7 +184,7 @@ class ilObjMindmap extends ilObjectPlugin
 		return null;
 	}
 
-	public function saveMindmapData(string $json): void
+	public function saveMindmapData(string $json, bool $write_backup = true): void
 	{
 		if ($this->validateMindmapData($json) !== null) {
 			throw new InvalidArgumentException('Invalid mindmap JSON');
@@ -192,7 +192,9 @@ class ilObjMindmap extends ilObjectPlugin
 
 		$path = self::getDataFilePathByObjId($this->getId());
 		file_put_contents($path, $json);
-		file_put_contents($path . '.' . date('YmdHis'), $json);
+		if ($write_backup) {
+			file_put_contents($path . '.' . date('YmdHis'), $json);
+		}
 	}
 
 	private function deleteDataFiles(string $path): void

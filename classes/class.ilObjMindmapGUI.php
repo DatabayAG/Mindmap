@@ -1,5 +1,8 @@
 <?php
 
+use ILIAS\Filesystem\Stream\Streams;
+use ILIAS\HTTP\Response\ResponseHeader;
+
 /**
 * User Interface class for mindmap repository object.
 *
@@ -49,6 +52,12 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 			return;
 		}
 
+		if ($this->ctrl->getCmd() === 'autosaveMindmap') {
+			$this->checkEditMapPermission();
+			$this->autosaveMindmap();
+			return;
+		}
+
 		parent::executeCommand();
 	}
 
@@ -84,6 +93,7 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 
 			case "showEdit":
 			case "saveMindmap":
+			case "autosaveMindmap":
 				$this->checkEditMapPermission();
 				$this->$cmd();
 				break;
@@ -281,6 +291,14 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 			$html
 		);
 		$html = str_replace(
+			"#AUTOSAVE_URL#",
+			(string) json_encode(
+				$this->ctrl->getFormAction($this, "autosaveMindmap"),
+				JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+			),
+			$html
+		);
+		$html = str_replace(
 			"#REPO_SELECTOR#",
 			'<div id="il-mindmap-repo-selector" class="il-hidden-repo-selector">'
 			. $this->createInternalLinkSelector()->render()
@@ -308,6 +326,37 @@ class ilObjMindmapGUI extends ilObjectPluginGUI
 		$this->object->saveMindmapData($raw);
 		$this->tpl->setOnScreenMessage("success", $this->txt("saving_invoked"), true);
 		$this->ctrl->redirect($this, "showEdit");
+	}
+
+	protected function autosaveMindmap(): void
+	{
+		global $DIC;
+
+		$raw = '';
+		if ($this->post_wrapper->has('mindmapdata')) {
+			$raw = $this->post_wrapper->retrieve(
+				'mindmapdata',
+				$this->refinery->kindlyTo()->string()
+			);
+		}
+
+		$payload = ['ok' => false];
+		$error = $this->object->validateMindmapData($raw);
+		if ($error === null) {
+			$this->object->saveMindmapData($raw, false);
+			$payload['ok'] = true;
+		} else {
+			$payload['error'] = $this->txt($error);
+		}
+
+		$http = $DIC->http();
+		$http->saveResponse(
+			$http->response()
+				->withHeader(ResponseHeader::CONTENT_TYPE, 'application/json')
+				->withBody(Streams::ofString((string) json_encode($payload)))
+		);
+		$http->sendResponse();
+		$http->close();
 	}
 
 	/**

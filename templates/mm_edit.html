@@ -10,9 +10,12 @@
                 <div class="il-mindmap-heading">#!editmap!#</div>
                 <div class="il-mindmap-hint">#!mindmap_editing_hint!#</div>
             </div>
-            <button type="button" id="mindmap-save" class="btn btn-default il-mindmap-save">
-                #!mindmap_speichern!#
-            </button>
+            <div class="il-mindmap-save-wrap">
+                <span id="mindmap-autosave-status" class="il-mindmap-autosave-status" aria-live="polite"></span>
+                <button type="button" id="mindmap-save" class="btn btn-default il-mindmap-save">
+                    #!mindmap_speichern!#
+                </button>
+            </div>
         </div>
         <div id="map" class="il-mindmap-canvas" aria-label="#!editmap!#"></div>
     </div>
@@ -36,6 +39,89 @@ oldjQuery(function() {
     oldjQuery(window).on('resize.mindmap', resizeMap);
 
     map.mindmap({"tree": tree, "edit": true, "path": "#ASSETPATH#"});
+
+    var lastSaved = map.data('mindmap').mindmap.json;
+    var lastSeen = lastSaved;
+    var dirtyTimer = null;
+    var inFlight = false;
+    var autosaveUrl = #AUTOSAVE_URL#;
+    var statusEl = document.getElementById('mindmap-autosave-status');
+
+    var currentJson = function() {
+        var data = map.data('mindmap');
+        return data && data.mindmap ? data.mindmap.json : '';
+    };
+
+    var setAutosaveStatus = function(text, cls) {
+        if (!statusEl) {
+            return;
+        }
+        statusEl.textContent = text;
+        statusEl.className = 'il-mindmap-autosave-status' + (cls ? ' ' + cls : '');
+    };
+
+    var doAutosave = function() {
+        var json = currentJson();
+        if (!json || json === lastSaved || inFlight) {
+            return;
+        }
+        inFlight = true;
+        setAutosaveStatus(MMLang.mindmap_autosaving, 'is-saving');
+        fetch(autosaveUrl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: 'mindmapdata=' + encodeURIComponent(json)
+                + '&cmd%5BautosaveMindmap%5D=1'
+        }).then(function(response) {
+            return response.json().then(function(data) {
+                return { httpOk: response.ok, data: data };
+            });
+        }).then(function(result) {
+            inFlight = false;
+            if (result.data && result.data.ok) {
+                lastSaved = json;
+                lastSeen = json;
+                setAutosaveStatus(MMLang.mindmap_autosaved, 'is-saved');
+            } else {
+                setAutosaveStatus(MMLang.mindmap_autosave_failed, 'is-failed');
+            }
+            if (currentJson() !== lastSaved) {
+                scheduleAutosave();
+            }
+        }).catch(function() {
+            inFlight = false;
+            setAutosaveStatus(MMLang.mindmap_autosave_failed, 'is-failed');
+            if (currentJson() !== lastSaved) {
+                scheduleAutosave();
+            }
+        });
+    };
+
+    var scheduleAutosave = function() {
+        if (dirtyTimer) {
+            clearTimeout(dirtyTimer);
+        }
+        dirtyTimer = setTimeout(doAutosave, 2000);
+    };
+
+    setInterval(function() {
+        var json = currentJson();
+        if (json && json !== lastSeen) {
+            lastSeen = json;
+            scheduleAutosave();
+        }
+    }, 500);
+
+    window.addEventListener('beforeunload', function(e) {
+        if (currentJson() !== lastSaved) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
 
     oldjQuery('#mindmap-save').on('click', function() {
         oldjQuery('#mindmapform').trigger('submit');

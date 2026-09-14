@@ -45,6 +45,9 @@ mindmap_plugin_configuration#:#Konfiguration
 saving_invoked#:#gespeichert
 mindmap_invalid_data#:#Die Mindmap-Daten sind ungültig und wurden nicht gespeichert.
 mindmap_speichern#:#Mindmap speichern
+mindmap_autosaving#:#Speichern…
+mindmap_autosaved#:#Gespeichert
+mindmap_autosave_failed#:#Automatisches Speichern fehlgeschlagen
 Kein_Objekt_aktiv#:#Kein Objekt aktiv
 neuer_Knotenpunkt#:#neuer Knotenpunkt
 Knotenpunkt_bearbeiten#:#Knotenpunkt bearbeiten

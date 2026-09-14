@@ -45,6 +45,9 @@ mindmap_plugin_configuration#:#Configuration
 saving_invoked#:#saved
 mindmap_invalid_data#:#The mindmap data is invalid and was not saved.
 mindmap_speichern#:#save mindmap
+mindmap_autosaving#:#Saving…
+mindmap_autosaved#:#Saved
+mindmap_autosave_failed#:#Could not save automatically
 Kein_Objekt_aktiv#:#no active object
 neuer_Knotenpunkt#:#new node
 Knotenpunkt_bearbeiten#:#edit node

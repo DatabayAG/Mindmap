@@ -38,6 +38,24 @@
 	line-height: 1.4;
 }
 
+.il-mindmap-save-wrap {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex: 0 0 auto;
+}
+
+.il-mindmap-autosave-status {
+	color: var(--mindmap-muted);
+	font-size: 12px;
+	line-height: 1.4;
+	white-space: nowrap;
+}
+
+.il-mindmap-autosave-status.is-failed {
+	color: #a32d2d;
+}
+
 .il-mindmap-save {
 	flex: 0 0 auto;
 }
