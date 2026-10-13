@@ -5,6 +5,19 @@
     var MIN_ZOOM = 0.5;
     var MAX_ZOOM = 2.0;
     var ZOOM_STEP = 1.15;
+    var TAP_SLOP = 10;
+    var DOUBLE_TAP_MS = 10000;
+    var DOUBLE_TAP_RADIUS = 30;
+    var lastPointerType = '';
+
+    var escAttr = function(value) {
+        return String(value == null ? '' : value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    };
 
     var getUniqId = function() {
         counter++;
@@ -57,6 +70,7 @@
             transform: 'scale(' + newZoom + ')',
             'transform-origin': '0 0'
         });
+        mindmap.area.children('#editObjDiv').css('transform', 'scale(' + (1 / newZoom) + ')');
 
         updateZoomControls(mindmap);
     };
@@ -369,13 +383,40 @@
 	};    
     
     var tooltipHideTimer = null;
+    var tooltipNodeId = null;
+    var tooltipPinned = false;
 
-    var removeNodeTooltips = function() {
+    var cancelTooltipHide = function() {
         if (tooltipHideTimer) {
             clearTimeout(tooltipHideTimer);
             tooltipHideTimer = null;
         }
+    };
+
+    var removeNodeTooltips = function() {
+        cancelTooltipHide();
         $('.tooltips').remove();
+        $('.mindmap-info-toggle[aria-expanded="true"]')
+            .attr('aria-expanded', 'false')
+            .removeAttr('aria-controls aria-describedby');
+        tooltipNodeId = null;
+        tooltipPinned = false;
+    };
+
+    var scheduleTooltipHide = function() {
+        if (tooltipPinned) {
+            return;
+        }
+        cancelTooltipHide();
+        tooltipHideTimer = setTimeout(removeNodeTooltips, 150);
+    };
+
+    var buildInfoMarker = function(info) {
+        return "<span class='simpletip'>&nbsp;"
+            + "<button type='button' class='mindmap-info-toggle' aria-expanded='false'"
+            + " aria-label='" + escAttr(MMLang.Beschreibung) + "'>*</button>"
+            + "<span class='mindmap-info-text' hidden>" + nl2br(info) + "</span>"
+            + "</span>";
     };
 
     var positionNodeTooltip = function($tooltip, $node) {
@@ -444,6 +485,7 @@
                 var field = document.getElementById('linktargetvalue_' + mmRepoLinkNodeId);
                 if (field) {
                     field.value = input.value;
+                    field.focus({ preventScroll: true });
                 }
             }, 50);
         }, true);
@@ -540,51 +582,190 @@
         }
     };
 
-    var bindNodeTooltips = function() {
-        $('.mindmapnode').has('.simpletip').off('.mindmaptooltip').on('mouseenter.mindmaptooltip', function() {
-            if (tooltipHideTimer) {
-                clearTimeout(tooltipHideTimer);
-                tooltipHideTimer = null;
-            }
-            removeNodeTooltips();
+    var editDialogOpen = function() {
+        return !!document.getElementById('editObjDiv');
+    };
 
-            var $node = $(this);
-            var txt = $node.find('.simpletip div').html();
-            if (!txt) {
+    var showNodeTooltip = function($node, pinned) {
+        if (editDialogOpen()) {
+            return;
+        }
+        var txt = $node.find('.mindmap-info-text').html();
+        if (!txt) {
+            return;
+        }
+        removeNodeTooltips();
+
+        var tooltipId = 'mindmap-tooltip-' + $node.attr('id');
+        var $tooltip = $('<div role="tooltip"></div>')
+            .attr('id', tooltipId)
+            .addClass('tooltips il-mindmap-tooltip')
+            .html(txt);
+
+        $('body').append($tooltip);
+        positionNodeTooltip($tooltip, $node);
+
+        $node.find('.mindmap-info-toggle').attr({
+            'aria-expanded': 'true',
+            'aria-controls': tooltipId,
+            'aria-describedby': tooltipId
+        });
+        tooltipNodeId = $node.attr('id');
+        tooltipPinned = !!pinned;
+
+        $tooltip.on('mouseenter', cancelTooltipHide);
+        $tooltip.on('mouseleave', scheduleTooltipHide);
+        $tooltip.on('wheel', function(e) {
+            e.stopPropagation();
+        });
+    };
+
+    var toggleNodeTooltip = function($node) {
+        if (!$node.find('.mindmap-info-text').length) {
+            return;
+        }
+        if (tooltipNodeId === $node.attr('id') && $('.il-mindmap-tooltip').length) {
+            if (tooltipPinned) {
+                removeNodeTooltips();
+            } else {
+                cancelTooltipHide();
+                tooltipPinned = true;
+            }
+            return;
+        }
+        showNodeTooltip($node, true);
+    };
+
+    var bindNodeTooltips = function(mindmap) {
+        mindmap.area
+            .on('mouseenter.mindmaptooltip', '.mindmapnode', function() {
+                if (tooltipPinned || lastPointerType === 'touch' || editDialogOpen()) {
+                    return;
+                }
+                cancelTooltipHide();
+                if (tooltipNodeId !== this.id) {
+                    showNodeTooltip($(this), false);
+                }
+            })
+            .on('mouseleave.mindmaptooltip', '.mindmapnode', scheduleTooltipHide);
+
+        $(document)
+            .on('pointerdown.mindmap pointerover.mindmap', function(e) {
+                lastPointerType = e.originalEvent.pointerType || '';
+            })
+            .on('pointerdown.mindmap', function(e) {
+                if (!tooltipPinned) {
+                    return;
+                }
+                var node = document.getElementById(tooltipNodeId);
+                if ((node && node.contains(e.target)) || $(e.target).closest('.il-mindmap-tooltip').length) {
+                    return;
+                }
+                removeNodeTooltips();
+            })
+            .on('keydown.mindmap', function(e) {
+                if (e.key === 'Escape' && tooltipNodeId && !editDialogOpen()) {
+                    removeNodeTooltips();
+                }
+            });
+    };
+
+    var openNodeEditor = function(mindmap, id) {
+        if (mindmap.disableRebuild > 0 || document.getElementById('editObjDiv')) {
+            return;
+        }
+        if ($('#relink2Button').is(':visible') || !document.getElementById(id)) {
+            return;
+        }
+        activateNode.call(mindmap, id);
+        removeNodeTooltips();
+        editNode.call(mindmap);
+    };
+
+    var bindNodeInteractions = function(mindmap) {
+        var area = mindmap.area;
+
+        if (mindmap.editable) {
+            area.on('mousedown touchstart', '.mindmapnode:not(.rootnode)', function(e) {
+                if ($(e.target).closest('.mindmap-info-toggle').length) {
+                    return;
+                }
+                nodeMove.call(this, mindmap, e);
+            });
+        }
+
+        area.on('click', '.rootnode', function() {
+            mindmap.activeObj = $(this);
+            highlightNode.call(mindmap, $(this));
+        });
+
+        area.on('click', '.mindmapnode', function(e) {
+            if (editDialogOpen()) {
+                e.preventDefault();
+                removeNodeTooltips();
                 return;
             }
-
-            var $tooltip = $('<div></div>')
-                .attr('id', 'tooltip' + (new Date()).getTime())
-                .addClass('tooltips il-mindmap-tooltip')
-                .html(txt);
-
-            $('body').append($tooltip);
-            positionNodeTooltip($tooltip, $node);
-
-            var scheduleHide = function() {
-                if (tooltipHideTimer) {
-                    clearTimeout(tooltipHideTimer);
-                }
-                tooltipHideTimer = setTimeout(function() {
-                    removeNodeTooltips();
-                }, 150);
-            };
-
-            var cancelHide = function() {
-                if (tooltipHideTimer) {
-                    clearTimeout(tooltipHideTimer);
-                    tooltipHideTimer = null;
-                }
-            };
-
-            $node.off('mouseleave.mindmaptooltip').on('mouseleave.mindmaptooltip', scheduleHide);
-            $tooltip.on('mouseenter', cancelHide);
-            $tooltip.on('mouseleave', scheduleHide);
-            $tooltip.on('wheel', function(e) {
-                e.stopPropagation();
-            });
+            if (e.detail !== 0 && mindmap.lastPanMoved) {
+                e.preventDefault();
+                return;
+            }
+            var $target = $(e.target);
+            if ($target.closest('.mindmap-info-toggle').length) {
+                e.preventDefault();
+                toggleNodeTooltip($(this));
+                return;
+            }
+            if (mindmap.editable || $target.closest('a[href]').length) {
+                return;
+            }
+            toggleNodeTooltip($(this));
         });
+
+        if (!mindmap.editable || !window.PointerEvent) {
+            return;
+        }
+
+        var tapStart = null;
+        var lastTap = null;
+
+        area[0].addEventListener('pointerdown', function(e) {
+            var node = e.target.closest ? e.target.closest('.mindmapnode') : null;
+            if (!e.isPrimary || e.button !== 0 || !node) {
+                tapStart = null;
+                return;
+            }
+            tapStart = { id: node.id, x: e.clientX, y: e.clientY, t: Date.now(), pointerId: e.pointerId };
+        });
+
+        $(document)
+            .on('pointerup.mindmap', function(ev) {
+                var e = ev.originalEvent;
+                var start = tapStart;
+                tapStart = null;
+                if (!start || e.pointerId !== start.pointerId) {
+                    return;
+                }
+                if (Math.abs(e.clientX - start.x) > TAP_SLOP || Math.abs(e.clientY - start.y) > TAP_SLOP) {
+                    lastTap = null;
+                    return;
+                }
+                if (lastTap && lastTap.id === start.id
+                    && start.t - lastTap.t <= DOUBLE_TAP_MS
+                    && Math.abs(start.x - lastTap.x) <= DOUBLE_TAP_RADIUS
+                    && Math.abs(start.y - lastTap.y) <= DOUBLE_TAP_RADIUS) {
+                    lastTap = null;
+                    openNodeEditor(mindmap, start.id);
+                    return;
+                }
+                lastTap = { id: start.id, t: Date.now(), x: start.x, y: start.y };
+                if (start.id === 'root') {
+                    mindmap.activeObj = $('#root');
+                    highlightNode.call(mindmap, mindmap.activeObj);
+                }
+            })
+            .on('pointercancel.mindmap', function() {
+                tapStart = null;
+            });
     };
 
     var rebuildTree = function(mindmap) {
@@ -606,7 +787,7 @@
 	var info = mindmap.nodes['root'].infotext+"";
 	    if(info=="undefined") info = "";
 	    if(info!="") {
-		    v += "<span class='simpletip'>&nbsp;*<div style='display:none;'>"+nl2br(info)+"</div></span>";
+		    v += buildInfoMarker(info);
 	    }
 
 	
@@ -628,14 +809,6 @@
         if( mindmap.nodes['root'].bordertype=="unterstrich" ) M.css("border-radius", "0").css("border-top-width", 0).css("border-left-width", 0).css("border-right-width", 0).css("background-color", 'transparent');
         
 	mindmap.area.append(M);
-	
-	M.bind('click', function() {
-	    mindmap.activeObj = $(this);	    
-            
-	    
-	    
-            highlightNode.call(mindmap, $(this) );
-	});
 
 
 
@@ -652,13 +825,10 @@
             
 	    var info = mindmap.nodes[mindmap.edges[i].to].infotext+"";
 	    if(info=="undefined") info = "";
-	    if(info!="") {
-	    	    v += "<span class='simpletip'>&nbsp;*<div style='display:none;'>"+nl2br(info)+"</div></span>";
-	    }
 	    
 	    if(!mindmap.editable) {
 		    if(mindmap.nodes[mindmap.edges[i].to].linktype=="extern") {
-			    v = "<a href='"+mindmap.nodes[mindmap.edges[i].to].linktarget+"' target='_blank' style='text-decoration: none; border-bottom:1px solid;'>"+v+"</a>";
+			    v = "<a href='"+mindmap.nodes[mindmap.edges[i].to].linktarget+"' target='_blank' rel='noopener noreferrer' style='text-decoration: none; border-bottom:1px solid;'>"+v+"</a>";
 		    } else if(mindmap.nodes[mindmap.edges[i].to].linktype=="intern") {
 			    if(typeof(internlinks[mindmap.nodes[mindmap.edges[i].to].linktarget])!="undefined") {
 				    v = "<a href='"+internlinks[mindmap.nodes[mindmap.edges[i].to].linktarget]+"' style='text-decoration: none; border-bottom:1px dashed;'>"+v+"</a>";
@@ -670,6 +840,9 @@
 		    } else if(mindmap.nodes[mindmap.edges[i].to].linktype=="intern") {
 			    v = "<span style='text-decoration: none; border-bottom:1px dashed;'>"+v+"</span>";
 		    }
+	    }
+	    if(info!="") {
+		    v += buildInfoMarker(info);
 	    }
 	    
 	    var  M = $('<div></div>');
@@ -689,13 +862,8 @@
                   
                   
 	    mindmap.area.append(M);
-	    if(mindmap.editable) {
-	    	    M.bind('mousedown touchstart', function(e) { nodeMove.call(this,mindmap,e);} );
-	    }
 
 	}
-	
-	bindNodeTooltips();
 
 
 	redrawLines.call(mindmap);
@@ -969,7 +1137,42 @@
     }
     
 
+	var EDIT_TABS = [
+		{ panel: 'editnodedesc', icon: 'input-edit.png', label: 'Beschreibung' },
+		{ panel: 'editnodefg', icon: 'text_color_hilight.png', label: 'Schriftfarbe' },
+		{ panel: 'editnodebg', icon: 'bg_color_fill.png', label: 'Hintergrundfarbe' },
+		{ panel: 'editnodeborder', icon: 'border_outline.png', label: 'Rahmenfarbe' },
+		{ panel: 'editnodelink', icon: 'icon_link.png', label: 'Verlinkung' },
+		{ panel: 'editnodearrow', icon: 'icon_arrows.png', label: 'Pfeilspitzen' }
+	];
+
+	var getFocusable = function(container) {
+		return $(container).find('a[href], button, input, select, textarea, [tabindex]').filter(function() {
+			return !this.disabled && this.type !== 'hidden' && this.tabIndex >= 0 && $(this).is(':visible');
+		}).toArray();
+	};
+
+	var trapFocus = function(e, container) {
+		var items = getFocusable(container);
+		if (!items.length) {
+			e.preventDefault();
+			return;
+		}
+		var first = items[0];
+		var last = items[items.length - 1];
+		var active = document.activeElement;
+		if (e.shiftKey && (active === first || active === container)) {
+			e.preventDefault();
+			last.focus();
+		} else if (!e.shiftKey && active === last) {
+			e.preventDefault();
+			first.focus();
+		}
+	};
+
 	var editNode = function() {
+		var mindmap = this;
+		var restoreFocus = document.activeElement;
 		    
 		$('.mindmapbutton').attr('disabled', 'disabled');
 		
@@ -977,46 +1180,35 @@
 		centerMindmap.call(this, myid);
 		
 		this.disableRebuild++;
+		removeNodeTooltips();
 		
-		orig = this.nodes[myid].title;
+		var orig = this.nodes[myid].title;
 		
                 
                 var pp = cssWorldPos(this.activeObj);
                 
                 $(this.area).append("<div id='transparentbg' style='position:absolute;z-index:999;left:0;top:0;width:10000px;height:10000px;background-color:silver;opacity: 0.7;'>&nbsp;</div>");
                 
-                var editObj = $("<div id='editObjDiv' style='width:300px;position:absolute;z-index: 1000;left:"+(pp.left-30)+"px;top:"+(pp.top-30)+"px;background-color: white;border: solid 1px silver;border-radius:5px;box-shadow:0 10px 18px -10px #888888;padding: 10px;'></div>");
+                var editObj = $("<div id='editObjDiv' role='dialog' aria-modal='true' aria-labelledby='mindmap-edit-title' aria-describedby='mindmap-edit-hint' tabindex='-1' style='width:300px;position:absolute;z-index: 1000;left:"+(pp.left-30)+"px;top:"+(pp.top-30)+"px;background-color: white;border: solid 1px silver;border-radius:5px;box-shadow:0 10px 18px -10px #888888;padding: 10px;'></div>");
+                editObj.css({ transform: 'scale(' + (1 / (this.zoom || 1)) + ')', 'transform-origin': '0 0' });
                 $(this.area).append(editObj);
+
+                editObj.on('mousedown touchstart pointerdown wheel', function(e) { e.stopPropagation(); });
                 
-                editObj.append( '<div style="float:left;font-weight: bold;font-size:10pt;color: #555555;">'+MMLang.Knotenpunkt_bearbeiten+'</div>' );
+                var closeButton = $('<button type="button" class="mindmap-dialog-close"></button>')
+                                .attr({ 'aria-label': MMLang.cancel, title: MMLang.cancel })
+                                .append($('<img alt="" width="16" height="16" />').attr('src', this.path + '/close.png'));
+                editObj.append(
+                        $('<div class="mindmap-edit-header"></div>')
+                                .append('<div id="mindmap-edit-title" class="mindmap-edit-title">' + MMLang.Knotenpunkt_bearbeiten + '</div>')
+                                .append(closeButton)
+                );
+                editObj.append('<p id="mindmap-edit-hint" class="mindmap-sr-only">' + MMLang.mindmap_edit_keyboard_hint + '</p>');
                 
-                
-                var closeIcon = $('<img src="'+this.path+'/close.png" onclick="" style="cursor:pointer;" />')
-                                .bind("mousedown", function(e) { e.stopPropagation(); })
-                                .click( (function(id, mindmap) {
-										    return function() {
-											$('.mindmapbutton').removeAttr('disabled');
-											
-                                                                                        var text = mindmap.nodes[id].title;
-                                                                                        var textta = mindmap.nodes[id].infotext;
-                                                                                        
-                                                                                        
-                                                                                        $('#editObjDiv').remove();
-                                                                                        $('#transparentbg').remove();
-                                                                                        
-											
-                                                                                        mindmap.disableRebuild--;
-											
-										    };                        
-										}( myid, this ) ) );
-                var close = $('<div style="color:black;float:right;"></div>').append( closeIcon );
-                editObj.append( close );
-                editObj.append( '<div style="clear:both;height:5px;"></div>');
-                
-                editObj.append( '<div style="font-size:8pt;color: #555555;">'+MMLang.Titel+'</div>' );
+                editObj.append( '<label class="mindmap-field-label" for="edit_'+myid+'">'+MMLang.Titel+'</label>' );
                 
                 
-                editObj.append( '<input type="text" class="mindmaptextarea" value="'+orig+'" id="edit_'+myid+'" style="width: 97%;" />').bind("mousedown", function(e) { e.stopPropagation(); });
+                editObj.append( '<input type="text" class="mindmaptextarea" value="'+orig+'" id="edit_'+myid+'" style="width: 97%;" />');
 
                 if(orig==MMLang.neuer_Knotenpunkt) {
 			editObj.append( '<div style="font-size:8pt;color:gray;">|| '+MMLang.um_mehrere_Knoten_nebeneinander_zu_erstellen+'.</div>' );
@@ -1024,17 +1216,16 @@
 		}
                 editObj.append( '<div style="clear:both;height:1px;border-bottom: dotted 1px gray;margin: 6px 0 6px 0;"></div>');
                 
-                var info = "";
-                info += "<img class='mmimg' src='"+this.path+"/input-edit.png' style='border: solid 1px red;margin:0 0 3px 3px;cursor:pointer;' width=20 height=18 onclick=\"hlimg(this);$('.editnodeall').hide();$('#editnodedesc').show();\" />&nbsp;";
-                info += "<img class='mmimg' src='"+this.path+"/text_color_hilight.png' style='border: solid 1px white;margin:0 0 3px 3px;cursor:pointer;' width=20 height=18 onclick=\"hlimg(this);$('.editnodeall').hide();$('#editnodefg').show();\" />&nbsp;";
-                info += "<img class='mmimg' src='"+this.path+"/bg_color_fill.png' style='border: solid 1px white;margin:0 0 3px 3px;cursor:pointer;' width=20 height=18 onclick=\"hlimg(this);$('.editnodeall').hide();$('#editnodebg').show();\" />&nbsp;";
-                info += "<img class='mmimg' src='"+this.path+"/border_outline.png' style='border: solid 1px white;margin:1px 0 3px 4px;cursor:pointer;' width=20 height=18 onclick=\"hlimg(this);$('.editnodeall').hide();$('#editnodeborder').show();\" />&nbsp;";
-                info += "<img class='mmimg' src='"+this.path+"/icon_link.png' style='border: solid 1px white;margin:1px 0 3px 4px;cursor:pointer;' width=20 height=18 onclick=\"hlimg(this);$('.editnodeall').hide();$('#editnodelink').show();\" />&nbsp;";
-                
-                info += "<img class='mmimg' src='"+this.path+"/icon_arrows.png' style='border: solid 1px white;margin:1px 0 3px 4px;cursor:pointer;' width=20 height=18 onclick=\"hlimg(this);$('.editnodeall').hide();$('#editnodearrow').show();\" />&nbsp;";
-                
-
-                editObj.append( '<div style="margin-bottom:10px;">'+info+'</div>' );
+                var tabs = "<div class='mindmap-edit-tabs' role='tablist' aria-label='" + escAttr(MMLang.Knotenpunkt_bearbeiten) + "'>";
+                for (var t = 0; t < EDIT_TABS.length; t++) {
+                        var tabLabel = escAttr(MMLang[EDIT_TABS[t].label]);
+                        tabs += "<button type='button' role='tab' class='mindmap-edit-tab' id='" + EDIT_TABS[t].panel + "_tab'"
+                                + " aria-controls='" + EDIT_TABS[t].panel + "' aria-selected='" + (t === 0) + "'"
+                                + " tabindex='" + (t === 0 ? 0 : -1) + "' title='" + tabLabel + "' aria-label='" + tabLabel + "'>"
+                                + "<img src='" + this.path + "/" + EDIT_TABS[t].icon + "' alt='' width='20' height='18' /></button>";
+                }
+                tabs += "</div>";
+                editObj.append(tabs);
                 
 		var ta = this.nodes[myid].infotext+"";
 		if(ta=="undefined") ta = "";
@@ -1046,14 +1237,14 @@
                 var info = "";
                 
                 
-                info += "<div id='editnodedesc' class='editnodeall'>";
-                info += '<div style="font-size:8pt;color: #555555;">'+MMLang.Beschreibung+'</div>';
+                info += "<div id='editnodedesc' class='editnodeall' role='tabpanel' aria-labelledby='editnodedesc_tab'>";
+                info += '<label class="mindmap-field-label" for="editta_'+myid+'">'+MMLang.Beschreibung+'</label>';
                 info += "<textarea width='100%' rows='3' class='mindmaptextarea' style='width:100%;z-index:1000;' id='editta_"+myid+"'>"+ta+"</textarea>";
                 info += "</div>";
                 
-                info += "<div id='editnodearrow' class='editnodeall' style='display:none;'>";
+                info += "<div id='editnodearrow' class='editnodeall' role='tabpanel' aria-labelledby='editnodearrow_tab' style='display:none;'>";
                 info += '<table cellspacing=0 cellpadding=0 class="propbox"><tr><td valign=top>';
-                info += '<div style="font-size:8pt;color: #555555;">'+MMLang.Pfeilspitzen+'</div>';
+                info += '<label class="mindmap-field-label" for="arrowtypevalue_'+myid+'">'+MMLang.Pfeilspitzen+'</label>';
                 
                 info += "<select id='arrowtypevalue_"+myid+"'>";
                 info += "<option value='ende' "+(this.nodes[myid].arrowtype=='ende' ? 'selected' : '')+">"+MMLang.arrow_ende+"</option>";
@@ -1067,10 +1258,10 @@
                 info += "</div>";
 
                 
-                info += "<div id='editnodefg' class='editnodeall' style='display:none;'>";
+                info += "<div id='editnodefg' class='editnodeall' role='tabpanel' aria-labelledby='editnodefg_tab' style='display:none;'>";
                 
                 info += '<table cellspacing=0 cellpadding=0 class="propbox"><tr><td valign=top>';
-                info += '<div style="font-size:8pt;color: #555555;">'+MMLang.Schriftfarbe+'</div>';
+                info += '<label class="mindmap-field-label" for="fgcolorvalue_'+myid+'">'+MMLang.Schriftfarbe+'</label>';
                 info += "<div class='mindmap-color-row'>";
                 info += "<input type='text' size=10 value='"+this.nodes[myid].fgcolor+"' id='fgcolorvalue_"+myid+"' class='farbvalue' />";
                 info += "<input type='color' class='c-field-color-picker' id='fgcolorpicker_"+myid+"' value='"+fgHex+"' aria-label='"+MMLang.Schriftfarbe+"' />";
@@ -1079,15 +1270,15 @@
                 info += '</td></tr>';
                 info += '<tr>';
                 info += '<td valign=top><br/>';
-                info += '<div style="font-size:8pt;color: #555555;">'+MMLang.Schriftgroesse+'</div>';
+                info += '<label class="mindmap-field-label" for="fontsize_'+myid+'">'+MMLang.Schriftgroesse+'</label>';
                 info += "<input type='text' size=5 style='text-align:center;' value='"+this.nodes[myid].fontsize+"' id='fontsize_"+myid+"' />pt<br/>";
                 info += '</td></tr></table>';
                 
                 info += "</div>";
                 
-                info += "<div id='editnodebg' class='editnodeall' style='display:none;'>";
+                info += "<div id='editnodebg' class='editnodeall' role='tabpanel' aria-labelledby='editnodebg_tab' style='display:none;'>";
                 info += '<table cellspacing=0 cellpadding=0 class="propbox"><tr><td valign=top>';
-                info += '<div style="font-size:8pt;color: #555555;">'+MMLang.Hintergrundfarbe+'</div>';
+                info += '<label class="mindmap-field-label" for="bgcolorvalue_'+myid+'">'+MMLang.Hintergrundfarbe+'</label>';
                 info += "<div class='mindmap-color-row'>";
                 info += "<input type='text' size=10 value='"+this.nodes[myid].bgcolor+"' id='bgcolorvalue_"+myid+"' class='farbvalue' />";
                 info += "<input type='color' class='c-field-color-picker' id='bgcolorpicker_"+myid+"' value='"+bgHex+"' aria-label='"+MMLang.Hintergrundfarbe+"' />";
@@ -1097,9 +1288,9 @@
                 info += "</div>";
                 
                 
-                info += "<div id='editnodeborder' class='editnodeall' style='display:none;'>";
+                info += "<div id='editnodeborder' class='editnodeall' role='tabpanel' aria-labelledby='editnodeborder_tab' style='display:none;'>";
                 info += '<table cellspacing=0 cellpadding=0 class="propbox"><tr><td valign=top>';
-                info += '<div style="font-size:8pt;color: #555555;">'+MMLang.Rahmenfarbe+'</div>';
+                info += '<label class="mindmap-field-label" for="bordercolorvalue_'+myid+'">'+MMLang.Rahmenfarbe+'</label>';
                 info += "<div class='mindmap-color-row'>";
                 info += "<input type='text' size=10 value='"+this.nodes[myid].bordercolor+"' id='bordercolorvalue_"+myid+"' class='farbvalue' />";
                 info += "<input type='color' class='c-field-color-picker' id='bordercolorpicker_"+myid+"' value='"+borderHex+"' aria-label='"+MMLang.Rahmenfarbe+"' />";
@@ -1109,12 +1300,12 @@
                 
                 info += '<tr>';
                 info += '<td valign=top><br/>';
-                info += '<div style="font-size:8pt;color: #555555;">'+MMLang.Dicke+'</div>';
+                info += '<label class="mindmap-field-label" for="borderwidthvalue_'+myid+'">'+MMLang.Dicke+'</label>';
                 info += "<input type='text' size=10 value='"+this.nodes[myid].borderwidth+"' id='borderwidthvalue_"+myid+"' /><br/>";
                 info += '</td><td width=20></td>';
                 
                 info += '<td valign=top><br/>';
-                info += '<div style="font-size:8pt;color: #555555;">'+MMLang.Art+'</div>';
+                info += '<label class="mindmap-field-label" for="bordertypevalue_'+myid+'">'+MMLang.Art+'</label>';
                 info += "<select id='bordertypevalue_"+myid+"'>";
                 info += "<option value='rund' "+(this.nodes[myid].bordertype=='rund' ? 'selected' : '')+">"+MMLang.abgerundet+"</option>";
                 info += "<option value='rund2' "+(this.nodes[myid].bordertype=='rund2' ? 'selected' : '')+">"+MMLang.rund+"</option>";
@@ -1125,15 +1316,15 @@
                 info += "</table>";
                 info += "</div>";
 
-                info += "<div id='editnodelink' class='editnodeall' style='display:none;'>";
-                info += '<div style="font-size:8pt;color: #555555;">'+MMLang.Verlinkung+'</div>';
+                info += "<div id='editnodelink' class='editnodeall' role='tabpanel' aria-labelledby='editnodelink_tab' style='display:none;'>";
+                info += '<label class="mindmap-field-label" for="linktypevalue_'+myid+'">'+MMLang.Verlinkung+'</label>';
                 info += "<select id='linktypevalue_"+myid+"'>";
                 info += "<option value=''>"+MMLang.kein_Link+"</option>";
                 info += "<option value='extern' "+(this.nodes[myid].linktype=='extern' ? 'selected' : '')+">"+MMLang.externer_Link+"</option>";
                 info += "<option value='intern' "+(this.nodes[myid].linktype=='intern' ? 'selected' : '')+">"+MMLang.interner_Link+"</option>";
                 info += "</select>";
                 info += "<br/><br/>";
-                info += '<div style="font-size:8pt;color: #555555;">URL '+MMLang.oder+' RefID</div>';
+                info += '<label class="mindmap-field-label" for="linktargetvalue_'+myid+'">URL '+MMLang.oder+' RefID</label>';
                 if(typeof(this.nodes[myid].linktarget)=="undefined") this.nodes[myid].linktarget = "";
                 info += "<input type='text' size=30 value='"+this.nodes[myid].linktarget+"' id='linktargetvalue_"+myid+"' /><br/>";
                 info += "<div id='linkpickerrow_"+myid+"' style='"+(this.nodes[myid].linktype=='intern' ? '' : 'display:none;')+"margin-top:6px;'>";
@@ -1143,7 +1334,6 @@
                 
                 
 		editObj.append( $('<div id="mindmapextrainfo" class="mindmapextrainfo" style="z-index: 2000;text-align:left;background-color:transparent;"></div>')
-					.bind("mousedown", function(e) { e.stopPropagation(); })
 					.append(info)
 					/*.append("Farbe:&nbsp;<input type='text' size=10 name='color' class='colorpicker mindmaptextarea' /> ")*/
 					);
@@ -1158,45 +1348,137 @@
 		bindHexColorPicker('fgcolorvalue_'+myid, 'fgcolorpicker_'+myid);
 		bindHexColorPicker('bgcolorvalue_'+myid, 'bgcolorpicker_'+myid);
 		bindHexColorPicker('bordercolorvalue_'+myid, 'bordercolorpicker_'+myid);
-		$('#edit_'+myid).select();
 		
 		editObj.append( '<div style="clear:both;height:1px;border-bottom: dotted 1px gray;margin: 6px 0 6px 0;"></div>');
 		
-		editObj.append( $('<input type="button" value="Ok" class="mindmapokbutton" style="float:right;" />')
-			     			.bind("mousedown", function(e) { e.stopPropagation(); })
-			     			.click( (function(id, mindmap) {
-										    return function() {
-											$('.mindmapbutton').removeAttr('disabled');
-											var text = $('#edit_'+id).val();
-											var textta = $('#editta_'+id).val();
+		var okButton = $('<button type="button" class="mindmapokbutton">Ok</button>');
+		editObj.append( $('<div class="mindmap-edit-footer"></div>').append(okButton) );
 
-                                                                                        var opts = {
-                                                                                                "fgcolor": $('#fgcolorvalue_'+id).val(), 
-                                                                                                "bordercolor": $('#bordercolorvalue_'+id).val(), 
-                                                                                                "borderwidth": $('#borderwidthvalue_'+id).val(), 
-                                                                                                "bordertype": $('#bordertypevalue_'+id).val(),
-                                                                                                "arrowtype": $('#arrowtypevalue_'+id).val(),
-                                                                                                "bgcolor": $('#bgcolorvalue_'+id).val(),
-                                                                                                "fontsize": $('#fontsize_'+id).val(),
-                                                                                                "linktype": $('#linktypevalue_'+id).val(),
-                                                                                                "linktarget": $('#linktargetvalue_'+id).val()
-                                                                                            };
-                                                                                            
-											$('#'+id).html( text );
-                                                                                        $('#editObjDiv').remove();
-                                                                                        
-                                                                                        $('#transparentbg').remove();
-                                                                                        
-											changeNodeText.call(mindmap, id, text, textta, opts );
-											
-											rebuildTree.call(this,mindmap);
-											
-											highlightNode.call(mindmap, $("#"+id));
-										    };                        
-										}( myid, this ) ) ) 
-					);
-		editObj.append( '<div style="clear:both;"></div>');
-		/*$('#colorpicker').farbtastic( function(color) { $('.colorpicker').val(color) } );*/
+		var closed = false;
+
+		var teardown = function() {
+			closed = true;
+			$('.mindmapbutton').removeAttr('disabled');
+			editObj.remove();
+			$('#transparentbg').remove();
+		};
+
+		var restore = function() {
+			if (restoreFocus && restoreFocus !== document.body && document.contains(restoreFocus)) {
+				restoreFocus.focus({ preventScroll: true });
+			}
+		};
+
+		var cancelEdit = function() {
+			if (closed) {
+				return;
+			}
+			teardown();
+			mindmap.disableRebuild--;
+			restore();
+		};
+
+		var commitEdit = function() {
+			if (closed) {
+				return;
+			}
+			var id = myid;
+			var text = $('#edit_'+id).val();
+			var textta = $('#editta_'+id).val();
+			var opts = {
+				"fgcolor": $('#fgcolorvalue_'+id).val(),
+				"bordercolor": $('#bordercolorvalue_'+id).val(),
+				"borderwidth": $('#borderwidthvalue_'+id).val(),
+				"bordertype": $('#bordertypevalue_'+id).val(),
+				"arrowtype": $('#arrowtypevalue_'+id).val(),
+				"bgcolor": $('#bgcolorvalue_'+id).val(),
+				"fontsize": $('#fontsize_'+id).val(),
+				"linktype": $('#linktypevalue_'+id).val(),
+				"linktarget": $('#linktargetvalue_'+id).val()
+			};
+
+			$('#'+id).html( text );
+			teardown();
+			changeNodeText.call(mindmap, id, text, textta, opts );
+			rebuildTree.call(mindmap, mindmap);
+			highlightNode.call(mindmap, $("#"+id));
+			restore();
+		};
+
+		closeButton.on('click', function(e) {
+			e.preventDefault();
+			cancelEdit();
+		});
+		okButton.on('click', function(e) {
+			e.preventDefault();
+			commitEdit();
+		});
+
+		var selectTab = function($tab, moveFocus) {
+			editObj.find('.mindmap-edit-tab').attr({ 'aria-selected': 'false', tabindex: '-1' });
+			$tab.attr({ 'aria-selected': 'true', tabindex: '0' });
+			editObj.find('.editnodeall').hide();
+			$('#' + $tab.attr('aria-controls')).show();
+			if (moveFocus) {
+				$tab.focus();
+			}
+		};
+
+		editObj.find('.mindmap-edit-tabs')
+			.on('click', '.mindmap-edit-tab', function(e) {
+				e.preventDefault();
+				selectTab($(this), false);
+			})
+			.on('keydown', '.mindmap-edit-tab', function(e) {
+				var $tabs = editObj.find('.mindmap-edit-tab');
+				var index = $tabs.index(this);
+				var next = null;
+				if (e.key === 'ArrowRight') {
+					next = (index + 1) % $tabs.length;
+				} else if (e.key === 'ArrowLeft') {
+					next = (index - 1 + $tabs.length) % $tabs.length;
+				} else if (e.key === 'Home') {
+					next = 0;
+				} else if (e.key === 'End') {
+					next = $tabs.length - 1;
+				}
+				if (next === null) {
+					return;
+				}
+				e.preventDefault();
+				selectTab($tabs.eq(next), true);
+			});
+
+		editObj.on('keydown', function(e) {
+			if (e.originalEvent.isComposing || e.keyCode === 229) {
+				return;
+			}
+			if (e.key === 'Escape' || e.key === 'Esc') {
+				e.preventDefault();
+				e.stopPropagation();
+				cancelEdit();
+				return;
+			}
+			if (e.key === 'Enter') {
+				var target = e.target;
+				if (!e.ctrlKey && !e.metaKey
+					&& (target.tagName !== 'INPUT' || target.type === 'color' || target.type === 'button')) {
+					return;
+				}
+				e.preventDefault();
+				commitEdit();
+				return;
+			}
+			if (e.key === 'Tab') {
+				trapFocus(e, editObj[0]);
+			}
+		});
+
+		var titleInput = document.getElementById('edit_'+myid);
+		if (titleInput) {
+			titleInput.focus({ preventScroll: true });
+			titleInput.select();
+		}
 	    };    
     
     
@@ -1285,8 +1567,12 @@
 				
 				if(mindmap.objactive != "") return;
 				mindmap.objactive = "bg";
-	
-				e.preventDefault();
+
+				var nativeTap = e.type === 'touchstart'
+					&& $(e.target).closest(mindmap.editable ? '.mindmap-info-toggle' : '.mindmapnode').length > 0;
+				if (!nativeTap) {
+					e.preventDefault();
+				}
 				dragData.dragging = true;
 				var me = this;
 				$(document).bind('mousemove.controllerdragging touchmove.controllerdragging', function(e) {
@@ -1348,6 +1634,9 @@
 	
 				    dragData.dragging = false;
 				    $(document).unbind('.controllerdragging');
+
+				    mindmap.lastPanMoved = Math.abs(dragData.current.x - dragData.start.x) > TAP_SLOP
+				        || Math.abs(dragData.current.y - dragData.start.y) > TAP_SLOP;
 	
 				    mindmap.left = mindmap.left+(dragData.current.x-dragData.start.x);
 				    mindmap.top = mindmap.top+(dragData.current.y-dragData.start.y);
@@ -1359,6 +1648,20 @@
 
                     }
                     );
+
+                    mindmap.area[0].addEventListener('touchmove', function(e) {
+                        if (mindmap.objactive !== 'bg' || !dragData.dragging || !e.cancelable || !e.touches.length) {
+                            return;
+                        }
+                        var touch = e.touches[0];
+                        if (Math.abs(touch.clientX - dragData.start.x) > TAP_SLOP
+                            || Math.abs(touch.clientY - dragData.start.y) > TAP_SLOP) {
+                            e.preventDefault();
+                        }
+                    }, { passive: false });
+
+                    bindNodeInteractions(mindmap);
+                    bindNodeTooltips(mindmap);
 
                     
                     var barG = $('<div id="areabar" role="toolbar"></div>');
@@ -1534,11 +1837,5 @@ function nl2br(str) {
     if(typeof(str)=="string") return str.replace(/(\r\n)|(\n\r)|\r|\n/g,"<BR>");
     else return str;
 }
-
-var hlimg = function(obj) {
-	$('.mmimg').css("border", "solid 1px white");
-	$(obj).css("border", "solid 1px red");
-};
-
 
 

@@ -16,5 +16,4 @@ $ilias_max_version = "10.999";
 $responsible = "Aresch Yavari";
 $responsible_mail = "ay at databay.de";
 
-// Required so CLI setup can run the plugin Setup Agent (RBAC registration).
 $supports_cli_setup = true;

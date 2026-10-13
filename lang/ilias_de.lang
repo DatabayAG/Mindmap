@@ -25,8 +25,9 @@ cat_create_xmmp#:#Erstelle Mindmap
 content#:#Inhalt
 editmap#:#Mindmap bearbeiten
 mindmap#:#Mindmap
-mindmap_navigation_hint#:#Ziehen Sie die Fläche, um zu navigieren. Mit dem Mausrad oder den +/- Schaltflächen zoomen Sie.
-mindmap_editing_hint#:#Ziehen Sie die Fläche, um zu navigieren. Mit dem Mausrad oder den +/- Schaltflächen zoomen Sie. Wählen Sie einen Knoten zum Bearbeiten aus.
+mindmap_navigation_hint#:#Ziehen Sie die Fläche, um zu navigieren. Mit dem Mausrad oder den +/- Schaltflächen zoomen Sie. Tippen oder klicken Sie auf einen Knoten, um seine Beschreibung anzuzeigen.
+mindmap_editing_hint#:#Ziehen Sie die Fläche, um zu navigieren. Mit dem Mausrad oder den +/- Schaltflächen zoomen Sie. Doppelklicken oder doppeltippen Sie auf einen Knoten, um ihn zu bearbeiten.
+mindmap_edit_keyboard_hint#:#Mit Enter speichern, mit Escape abbrechen. Im Beschreibungsfeld mit Strg+Enter speichern.
 zoom_in#:#Vergrößern
 zoom_out#:#Verkleinern
 properties#:#Einstellungen
@@ -76,6 +77,7 @@ bearbeiten#:#bearbeiten
 loeschen#:#löschen
 umhaengen#:#Knoten umhängen
 hieranhaengen#:#an markierten Knoten anhängen
+Pfeilspitzen#:#Pfeilspitzen
 amEnde#:#am Ende
 amAnfang#:#am Anfang
 amAnfangundamEnde#:#am Anfang und am Ende

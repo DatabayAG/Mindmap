@@ -66,6 +66,7 @@
 	min-height: 520px;
 	overflow: hidden;
 	background-color: var(--mindmap-surface-muted);
+	touch-action: manipulation;
 }
 
 .mindmapbackground {
@@ -147,12 +148,47 @@
 	line-height: 1.35;
 	text-align: center;
 	transition: outline-color 120ms ease, outline-offset 120ms ease;
+	cursor: pointer;
+	touch-action: none;
 }
 
-.mindmapnode:hover {
+@media (hover: hover) {
+	.mindmapnode:hover {
+		outline: 2px solid color-mix(in srgb, var(--mindmap-accent) 30%, transparent);
+		outline-offset: 2px;
+	}
+}
+
+.mindmap-info-toggle {
+	position: relative;
+	display: inline;
+	margin: 0;
+	padding: 0 2px;
+	border: 0;
+	border-radius: 2px;
+	background: none;
+	color: inherit;
+	font: inherit;
+	line-height: inherit;
 	cursor: pointer;
-	outline: 2px solid color-mix(in srgb, var(--mindmap-accent) 30%, transparent);
-	outline-offset: 2px;
+}
+
+.mindmap-info-toggle::after {
+	content: "";
+	position: absolute;
+	top: -10px;
+	right: -10px;
+	bottom: -10px;
+	left: -3px;
+}
+
+.mindmap-info-toggle:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 1px;
+}
+
+.mindmap-info-toggle[aria-expanded="true"] {
+	text-decoration: underline;
 }
 
 .rootnode {
@@ -265,15 +301,105 @@
 	outline-offset: 0;
 }
 
-.mmimg {
-	box-sizing: content-box;
-	padding: 5px;
-	border: 1px solid transparent !important;
-	border-radius: 3px;
+#editObjDiv:focus {
+	outline: none;
 }
 
-.mmimg:hover {
+.mindmap-edit-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	margin-bottom: 8px;
+}
+
+.mindmap-edit-title {
+	color: var(--mindmap-text);
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.mindmap-dialog-close {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	margin: -6px -6px -6px 0;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	background: transparent;
+	cursor: pointer;
+}
+
+.mindmap-field-label {
+	display: block;
+	max-width: none;
+	margin: 0 0 2px;
+	color: var(--mindmap-muted);
+	font-size: 11px;
+	font-weight: normal;
+}
+
+.mindmap-edit-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-bottom: 10px;
+}
+
+.mindmap-edit-tab {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 32px;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: 3px;
+	background: transparent;
+	cursor: pointer;
+}
+
+.mindmap-edit-tab[aria-selected="true"] {
+	border-color: var(--mindmap-accent);
 	background: var(--mindmap-surface-muted);
+}
+
+@media (hover: hover) {
+	.mindmap-dialog-close:hover,
+	.mindmap-edit-tab:hover {
+		border-color: var(--mindmap-border);
+		background: var(--mindmap-surface-muted);
+	}
+}
+
+.mindmap-edit-footer {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.mindmap-dialog-close:focus-visible,
+.mindmap-edit-tab:focus-visible,
+.mindmapokbutton:focus-visible,
+.mindmap-link-picker:focus-visible,
+#editObjDiv input.c-field-color-picker:focus-visible {
+	outline: 2px solid var(--mindmap-accent);
+	outline-offset: 2px;
+}
+
+.mindmap-sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
 }
 
 .simpletip {
@@ -375,6 +501,44 @@
 .mindmap-color-preset:focus-visible {
 	outline: 2px solid var(--mindmap-accent, #4c6586);
 	outline-offset: 1px;
+}
+
+@media (pointer: coarse) {
+	.mindmap-dialog-close,
+	.mindmap-edit-tab {
+		width: 44px;
+		height: 44px;
+	}
+
+	.mindmap-dialog-close {
+		margin: -10px -10px -10px 0;
+	}
+
+	#editObjDiv input[type="text"],
+	#editObjDiv select,
+	.mindmapokbutton,
+	.mindmap-link-picker {
+		min-height: 44px;
+	}
+
+	.mindmapokbutton {
+		min-width: 88px;
+	}
+
+	#editObjDiv input.c-field-color-picker {
+		width: 44px;
+		height: 44px;
+	}
+
+	.mindmap-color-presets {
+		gap: 6px;
+		max-width: 230px;
+	}
+
+	.mindmap-color-preset {
+		width: 32px;
+		height: 32px;
+	}
 }
 
 @media (max-width: 767px) {

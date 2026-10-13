@@ -25,8 +25,9 @@ cat_create_xmmp#:#Create Mindmap
 content#:#Content
 editmap#:#Edit Map
 mindmap#:#Mindmap
-mindmap_navigation_hint#:#Drag the canvas to navigate. Use the mouse wheel or +/- buttons to zoom.
-mindmap_editing_hint#:#Drag the canvas to navigate. Use the mouse wheel or +/- buttons to zoom. Select a node to edit the map.
+mindmap_navigation_hint#:#Drag the canvas to navigate. Use the mouse wheel or +/- buttons to zoom. Tap or click a node to show its description.
+mindmap_editing_hint#:#Drag the canvas to navigate. Use the mouse wheel or +/- buttons to zoom. Double-click or double-tap a node to edit it.
+mindmap_edit_keyboard_hint#:#Press Enter to save or Escape to cancel. In the description field, press Ctrl+Enter to save.
 zoom_in#:#Zoom in
 zoom_out#:#Zoom out
 properties#:#Properties
@@ -76,6 +77,7 @@ bearbeiten#:#edit
 loeschen#:#delete
 umhaengen#:#relocate node
 hieranhaengen#:#attach node to this one
+Pfeilspitzen#:#Arrowheads
 amEnde#:#at the end
 amAnfang#:#at the beginning
 amAnfangundamEnde#:#at both sides
